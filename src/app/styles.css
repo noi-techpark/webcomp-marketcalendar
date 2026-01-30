@@ -65,8 +65,42 @@ body {
   --color-indicator-position-markets-map: var(--color-indicator-position-markets-map, var(--color-indicator-position-markets-map-default));
 }
 
+/* Explicit dark theme block: same structure as light so dark mode has general color variables (preset can override). */
+.wcmc-root[data-bs-theme="dark"] {
+  --primary-color-dark-default: #50742F;
+  --secondary-color-dark-default: #565E64;
+  --text-color-dark-default: #FFFFFF;
+  --background-color-dark-default: #000000;
+  --border-color-dark-default: #565E64;
+  --input-border-color-dark-default: #FFFFFF;
+
+  --primary-color-dark: var(--primary-color-dark, var(--primary-color-dark-default));
+  --secondary-color-dark: var(--secondary-color-dark, var(--secondary-color-dark-default));
+  --text-color-dark: var(--text-color-dark, var(--text-color-dark-default));
+  --background-color-dark: var(--background-color-dark, var(--background-color-dark-default));
+  --border-color-dark: var(--border-color-dark, var(--border-color-dark-default));
+  --input-border-color-dark: var(--input-border-color-dark, var(--input-border-color-dark-default));
+
+  --primary-color: var(--primary-color-dark);
+
+  /* Bootstrap form border variables (Shadow DOM may not inherit :root) */
+  --bs-border-width: 1px;
+  --bs-border-style: solid;
+  --bs-border-color: var(--input-border-color-dark, #ffffff);
+  --bs-border-radius: 0.375rem;
+}
+
+/* Force visible borders on all form controls in dark mode (Bootstrap may not apply in Shadow DOM) */
+.wcmc-root[data-bs-theme="dark"] .form-control,
+.wcmc-root[data-bs-theme="dark"] .form-select {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: var(--input-border-color-dark, rgba(255, 255, 255, 0.5)) !important;
+  border-radius: 0.375rem;
+}
+
 .wcmc-root[data-bs-theme="light"] {
-  /* Default values from .config file */
+  /* Default values from preset / config */
   --primary-color-light-default: #50742F;
   --secondary-color-light-default: #F3F3F3;
   --text-color-light-default: #000000;
@@ -834,10 +868,10 @@ body {
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-date-selector {
-  background: transparent;
+  background-color: var(--input-bg-dark, rgba(255, 255, 255, 0.06)) !important;
   color: var(--text-color-dark, #ffffff);
-  border-color: var(--input-border-color-dark, #ffffff);
-  /* Use Bootstrap: border */
+  border: 1px solid var(--input-border-color-dark, #ffffff) !important;
+  border-radius: 0.375rem;
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-date-selector::placeholder {
@@ -845,9 +879,9 @@ body {
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-date-selector:focus {
-  border-color: var(--input-border-color-dark, #ffffff);
+  border: 1px solid var(--input-border-color-dark, #ffffff) !important;
   box-shadow: 0 0 0 2px rgba(80, 116, 47, 0.2);
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-date-selector {
@@ -1016,12 +1050,12 @@ body {
   font-style: italic;
 }
 
-/* Dark mode: sfondo trasparente/scuro, testo bianco */
+/* Dark mode: visible border and subtle background */
 .wcmc-root[data-bs-theme="dark"] .wcmc-search-input {
-  background: transparent;
+  background-color: var(--input-bg-dark, rgba(255, 255, 255, 0.06)) !important;
   color: var(--text-color-dark, #ffffff);
-  border-color: var(--input-border-color-dark, #ffffff);
-  /* Use Bootstrap: border */
+  border: 1px solid var(--input-border-color-dark, #ffffff) !important;
+  border-radius: 0.375rem;
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-search-input::placeholder {
@@ -1029,9 +1063,9 @@ body {
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-search-input:focus {
-  border-color: var(--input-border-color-dark, #ffffff);
+  border: 1px solid var(--input-border-color-dark, #ffffff) !important;
   box-shadow: 0 0 0 2px rgba(80, 116, 47, 0.2);
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-search-icon {
@@ -1155,18 +1189,18 @@ body {
   vertical-align: middle;
 }
 
-/* Dark mode: sfondo trasparente/scuro, testo bianco */
+/* Dark mode: visible border and subtle background */
 .wcmc-root[data-bs-theme="dark"] .wcmc-filter-select {
-  background: transparent;
+  background-color: var(--input-bg-dark, rgba(255, 255, 255, 0.06)) !important;
   color: var(--text-color-dark, #ffffff);
-  border-color: var(--input-border-color-dark, #ffffff);
-  /* Use Bootstrap: border */
+  border: 1px solid var(--input-border-color-dark, #ffffff) !important;
+  border-radius: 0.375rem;
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-filter-select:focus {
-  border-color: var(--input-border-color-dark, #ffffff);
+  border: 1px solid var(--input-border-color-dark, #ffffff) !important;
   box-shadow: 0 0 0 2px rgba(80, 116, 47, 0.2);
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Bootstrap Dropdown Menu Styles */

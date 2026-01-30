@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import envConfig from '../app/envConfig.js';
+
 function getSource(config) {
   return (config && config.source) || 'hds';
 }
@@ -29,15 +31,18 @@ function isAbsoluteUrl(u) {
   }
 }
 
-async function fetchJson(url, { signal, debug } = {}) {
-  
+async function fetchJson(url, { signal, debug, origin } = {}) {
+  const headers = {
+    'Accept': 'application/json',
+  };
+  if (origin) {
+    headers['X-Origin'] = origin;
+  }
   try {
     const res = await fetch(url, {
       method: 'GET',
       signal,
-      headers: {
-        'Accept': 'application/json',
-      },
+      headers,
       mode: 'cors',
       credentials: 'omit', // Don't send cookies to avoid CORS issues
     });
@@ -66,8 +71,11 @@ async function fetchJson(url, { signal, debug } = {}) {
   }
 }
 
-export function createOdhClient({ apiBase, debug = false, config = null } = {}) {
-  const base = apiBase || 'https://tourism.api.opendatahub.testingmachine.eu';
+const DEFAULT_API_BASE = 'https://tourism.api.opendatahub.testingmachine.eu';
+
+export function createOdhClient({ apiBase, debug = false, config = null, origin } = {}) {
+  const base = apiBase || DEFAULT_API_BASE;
+  const requestOrigin = origin || envConfig.ORIGIN;
   const source = getSource(config);
   const TYPE_TO_TAGFILTER = buildTypeToTagFilter(source);
 
@@ -98,7 +106,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
   }
 
   async function fetchPageByUrl(url, { signal } = {}) {
-    const page = await fetchJson(url, { signal, debug });
+    const page = await fetchJson(url, { signal, debug, origin: requestOrigin });
     const items = Array.isArray(page?.Items) ? page.Items : [];
     const next = page?.NextPage || null;
     return { items, page, nextPage: next };
@@ -114,7 +122,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     if (removenullvalues === true) params.push('removenullvalues=true');
     if (params.length > 0) url += '?' + params.join('&');
     
-    const item = await fetchJson(url, { signal, debug });
+    const item = await fetchJson(url, { signal, debug, origin: requestOrigin });
     return item;
   }
 
@@ -165,7 +173,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     // Fetch multiple pages until we have enough results or no more pages
     while (currentUrl && results.length < maxResults) {
       const url = isAbsoluteUrl(currentUrl) ? currentUrl : joinUrl(base, currentUrl);
-      const data = await fetchJson(url, { signal, debug });
+      const data = await fetchJson(url, { signal, debug, origin: requestOrigin });
       const items = Array.isArray(data?.Items) ? data.Items : [];
       
       // Filter out the current fair
@@ -197,7 +205,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     // Fetch all pages to get accurate count
     while (currentUrl) {
       const url = isAbsoluteUrl(currentUrl) ? currentUrl : joinUrl(base, currentUrl);
-      const data = await fetchJson(url, { signal, debug });
+      const data = await fetchJson(url, { signal, debug, origin: requestOrigin });
       const items = Array.isArray(data?.Items) ? data.Items : [];
       count += items.length;
       
@@ -220,7 +228,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     
     if (params.length > 0) url += '?' + params.join('&');
     
-    const municipality = await fetchJson(url, { signal, debug });
+    const municipality = await fetchJson(url, { signal, debug, origin: requestOrigin });
     return municipality;
   }
 
@@ -236,7 +244,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     
     if (params.length > 0) url += '?' + params.join('&');
     
-    const district = await fetchJson(url, { signal, debug });
+    const district = await fetchJson(url, { signal, debug, origin: requestOrigin });
     return district;
   }
 
@@ -262,7 +270,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
       fullUrl += separator + params.join('&');
     }
     
-    const region = await fetchJson(fullUrl, { signal, debug });
+    const region = await fetchJson(fullUrl, { signal, debug, origin: requestOrigin });
     return region;
   }
 
@@ -282,7 +290,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
       fullUrl += separator + params.join('&');
     }
     
-    const tourismAssociation = await fetchJson(fullUrl, { signal, debug });
+    const tourismAssociation = await fetchJson(fullUrl, { signal, debug, origin: requestOrigin });
     return tourismAssociation;
   }
 
@@ -295,7 +303,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     }
     
     const url = joinUrl(base, `v1/TourismAssociation?${params.toString()}`);
-    const response = await fetchJson(url, { signal, debug });
+    const response = await fetchJson(url, { signal, debug, origin: requestOrigin });
     
     // Handle both direct array response and paginated response
     let items = [];
@@ -315,7 +323,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
 
   async function fetchTourismAssociationPageByUrl(url, { signal } = {}) {
     const fullUrl = isAbsoluteUrl(url) ? url : joinUrl(base, url);
-    const response = await fetchJson(fullUrl, { signal, debug });
+    const response = await fetchJson(fullUrl, { signal, debug, origin: requestOrigin });
     
     // Handle both direct array response and paginated response
     let items = [];
@@ -375,7 +383,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     params.append('rawfilter', `eq(Name, '${originalName}')`);
     let url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
     
-    let response = await fetchJson(url, { signal, debug });
+    let response = await fetchJson(url, { signal, debug, origin: requestOrigin });
     
     if (Array.isArray(response?.Items) && response.Items.length > 0) {
       return response.Items[0];
@@ -387,7 +395,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     params.append('rawfilter', `eq(Name, '${upperName}')`);
     url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
     
-    response = await fetchJson(url, { signal, debug });
+    response = await fetchJson(url, { signal, debug, origin: requestOrigin });
     
     if (Array.isArray(response?.Items) && response.Items.length > 0) {
       return response.Items[0];
@@ -398,7 +406,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     params.append('rawfilter', `like(Name, '${originalName}')`);
     url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
     
-    response = await fetchJson(url, { signal, debug });
+    response = await fetchJson(url, { signal, debug, origin: requestOrigin });
     
     if (Array.isArray(response?.Items) && response.Items.length > 0) {
       // Find the best match (exact case-insensitive match)
@@ -414,7 +422,7 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     params.append('rawfilter', `like(Name, '${upperName}')`);
     url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
     
-    response = await fetchJson(url, { signal, debug });
+    response = await fetchJson(url, { signal, debug, origin: requestOrigin });
     
     if (Array.isArray(response?.Items) && response.Items.length > 0) {
       // Find the best match (exact case-insensitive match)

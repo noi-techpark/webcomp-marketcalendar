@@ -28,51 +28,141 @@
     "files": [
       "webcomp-market-calendar.js"
     ],
-    "scripts": [
-    ]
+    "scripts": []
   },
   "configuration": {
     "tagName": "webcomp-market-calendar",
     "options": [
       {
+        "key": "titleItalian",
+        "type": "text",
+        "label": "Title (Italian)",
+        "required": false,
+        "options": { "default": "Mercati in Alto Adige" }
+      },
+      {
+        "key": "titleEnglish",
+        "type": "text",
+        "label": "Title (English)",
+        "required": false,
+        "options": { "default": "Markets in Alto Adige" }
+      },
+      {
+        "key": "titleGerman",
+        "type": "text",
+        "label": "Title (German)",
+        "required": false,
+        "options": { "default": "Märkte in Alto Adige" }
+      },
+      {
+        "key": "source",
+        "type": "text",
+        "label": "Data source",
+        "required": false,
+        "options": { "default": "hds" }
+      },
+      {
+        "key": "colorPresets",
+        "type": "select",
+        "label": "Color preset",
+        "required": false,
+        "options": { "values": ["OPENDATAHUB"], "default": "OPENDATAHUB" }
+      },
+      {
         "key": "language",
         "type": "select",
-        "label": "language",
+        "label": "Language",
         "required": false,
         "options": { "values": ["en", "it", "de"], "default": "en" }
       },
       {
+        "key": "filterZoneDefaultValue",
+        "type": "text",
+        "label": "Default zone filter",
+        "required": false,
+        "options": { "default": "" }
+      },
+      {
+        "key": "filterCategoryDefaultValue",
+        "type": "text",
+        "label": "Default category filter",
+        "required": false,
+        "options": { "default": "" }
+      },
+      {
+        "key": "navbarVisibility",
+        "type": "bool",
+        "label": "Show navbar",
+        "required": false,
+        "options": { "default": true }
+      },
+      {
+        "key": "languageVisibility",
+        "type": "bool",
+        "label": "Show language switcher",
+        "required": false,
+        "options": { "default": true }
+      },
+      {
+        "key": "lightDarkVisibility",
+        "type": "bool",
+        "label": "Show light/dark mode toggle",
+        "required": false,
+        "options": { "default": true }
+      },
+      {
+        "key": "zoomFairsMarketsMap",
+        "type": "number",
+        "label": "Map zoom (fairs & markets)",
+        "required": false,
+        "options": { "default": 15 }
+      },
+      {
+        "key": "centerMapsMaps",
+        "type": "text",
+        "label": "Map center (latitude, longitude)",
+        "required": false,
+        "options": { "default": "46.50,11.50" }
+      },
+      {
+        "key": "zoomMapsMaps",
+        "type": "number",
+        "label": "Map zoom level",
+        "required": false,
+        "options": { "default": 9 }
+      },
+      {
+        "key": "filter",
+        "type": "bool",
+        "label": "Show filters",
+        "required": false,
+        "options": { "default": true }
+      },
+      {
         "key": "theme",
         "type": "select",
-        "label": "theme",
+        "label": "Theme",
         "required": false,
         "options": { "values": ["light", "dark"], "default": "light" }
       },
       {
         "key": "initial-view",
         "type": "select",
-        "label": "initial-view",
+        "label": "Initial view",
         "required": false,
         "options": { "values": ["markets", "fairs", "map", "community"], "default": "markets" }
       },
       {
-        "key": "api-base",
-        "type": "text",
-        "label": "api-base",
-        "required": false,
-        "options": { "default": "https://tourism.api.opendatahub.testingmachine.eu" }
-      },
-      {
         "key": "page-size",
         "type": "number",
-        "label": "page-size",
+        "label": "Items per page",
         "required": false,
         "options": { "default": 20, "min": 1, "max": 200, "step": 1 }
       },
       {
         "key": "debug",
         "type": "bool",
-        "label": "debug",
+        "label": "Enable debug mode",
         "required": false,
         "options": { "default": false }
       }

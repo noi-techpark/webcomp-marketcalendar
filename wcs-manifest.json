@@ -4,7 +4,7 @@
   "description": "Responsive market & fairs calendar (markets + year markets) with list, detail, map and community aggregation views.",
   "descriptionAbstract": "Markets & fairs calendar (ODH Tourism API) with lists, details, map and community aggregation.",
   "license": "AGPL-3.0-or-later",
-  "repositoryUrl": "https://github.com/noi-techpark/webcomp-market-calendar",
+  "repositoryUrl": "https://github.com/noi-techpark/webcomp-market-calendar.git",
   "copyrightHolders": [
     {
       "name": "NOI",

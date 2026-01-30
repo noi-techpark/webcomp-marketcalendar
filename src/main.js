@@ -4,19 +4,30 @@
 
 import { createApp, reactive } from 'vue';
 import App from './app/App.vue';
-import { configFromAttributes, defaultConfig, getSystemTheme } from './app/config';
+import { configOverridesFromAttributes, defaultConfig, getSystemTheme } from './app/config';
 
 // CSS is bundled into the JS and injected into Shadow DOM
 import bootstrapCss from 'bootstrap/dist/css/bootstrap.min.css';
 import leafletCss from 'leaflet/dist/leaflet.css';
 import baseCss from './app/styles.css';
-import rawConfig from '../.config';
+import opendatahubPreset from '../config-presets/opendatahub.preset';
+
+/** Preset name (from color-presets attribute) -> preset file content (KEY=value lines). */
+const PRESET_MAP = {
+  OPENDATAHUB: opendatahubPreset,
+};
 
 const TAG_NAME = 'webcomp-market-calendar';
 
 class WebcompMarketCalendar extends HTMLElement {
   static get observedAttributes() {
-    return ['language', 'theme', 'initial-view', 'api-base', 'page-size', 'debug'];
+    return [
+      'title-italian', 'title-english', 'title-german', 'source', 'color-presets',
+      'language', 'filter-zone-default-value', 'filter-category-default-value',
+      'navbar-visibility', 'language-visibility', 'light-dark-visibility',
+      'zoom-fairs-markets-map', 'center-maps-maps', 'zoom-maps-maps', 'filter',
+      'theme', 'initial-view', 'page-size', 'debug',
+    ];
   }
 
   constructor() {
@@ -28,13 +39,13 @@ class WebcompMarketCalendar extends HTMLElement {
     this._mediaQueryList = null;
     this._onSystemThemeChange = null;
 
-    this._styleEl = document.createElement('style');
-    this._styleEl.textContent = `${bootstrapCss}\n${leafletCss}\n${baseCss}`;
+    const style = document.createElement('style');
+    style.textContent = `${bootstrapCss}\n${leafletCss}\n${baseCss}`;
+    this._shadow.appendChild(style);
 
     this._mountPoint = document.createElement('div');
     this._mountPoint.className = 'wcmc-root';
 
-    this._shadow.appendChild(this._styleEl);
     this._shadow.appendChild(this._mountPoint);
   }
 
@@ -66,236 +77,60 @@ class WebcompMarketCalendar extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     this._applyAttributesToConfig();
+    this._applyConfigVariables();
     this._setupSystemThemeListenerIfNeeded();
     this._applyThemeToShadowRoot();
   }
 
   _applyAttributesToConfig() {
-    const next = configFromAttributes(this);
-    Object.assign(this._config, next);
+    const overrides = configOverridesFromAttributes(this);
+    Object.assign(this._config, overrides);
   }
 
+  /** Apply ASPECTS from the preset file selected by color-presets (e.g. OPENDATAHUB → config-presets/opendatahub.preset). */
   _applyConfigVariables() {
-    if (!rawConfig) return;
-    const lines = rawConfig.split('\n');
-    lines.forEach(line => {
+    const raw = this._config.colorPresets;
+    const presetName = raw == null
+      ? null
+      : (Array.isArray(raw) ? raw[0] : raw);
+    if (!presetName) return;
+    const key = String(presetName).trim().toUpperCase();
+    const presetContent = PRESET_MAP[key];
+    if (!presetContent || typeof presetContent !== 'string') return;
+
+    const lines = presetContent.split('\n');
+    lines.forEach((line) => {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) return;
       const parts = trimmed.split('=');
       if (parts.length < 2) return;
-      const key = parts[0].trim();
+      const lineKey = parts[0].trim();
       const value = parts.slice(1).join('=').trim();
-      if (key && value) {
-        // Convert KEY_NAME to --key-name
-        const cssVarName = '--' + key.toLowerCase().replace(/_/g, '-');
-        this._mountPoint.style.setProperty(cssVarName, value);
+      if (!lineKey || !value) return;
 
-        // Special case: map PRIMARY_COLOR to --primary-color if generic
-        if (key === 'PRIMARY_COLOR') {
+      const cssVarName = '--' + lineKey.toLowerCase().replace(/_/g, '-');
+      this._mountPoint.style.setProperty(cssVarName, value);
+      if (lineKey === 'PRIMARY_COLOR') {
+        this._mountPoint.style.setProperty('--primary-color', value);
+      }
+      if (lineKey === 'PRIMARY_COLOR_DARK') {
+        this._mountPoint.style.setProperty('--primary-color-dark', value);
+        if (this._config.theme === 'dark') {
           this._mountPoint.style.setProperty('--primary-color', value);
         }
-        
-        // Map PRIMARY_COLOR_DARK and PRIMARY_COLOR_LIGHT to --primary-color based on theme
-        if (key === 'PRIMARY_COLOR_DARK') {
-          this._mountPoint.style.setProperty('--primary-color-dark', value);
-          // Also set --primary-color if in dark mode
-          if (this._config.theme === 'dark') {
-            this._mountPoint.style.setProperty('--primary-color', value);
-          }
+      }
+      if (lineKey === 'PRIMARY_COLOR_LIGHT') {
+        this._mountPoint.style.setProperty('--primary-color-light', value);
+        if (this._config.theme === 'light') {
+          this._mountPoint.style.setProperty('--primary-color', value);
         }
-        if (key === 'PRIMARY_COLOR_LIGHT') {
-          this._mountPoint.style.setProperty('--primary-color-light', value);
-          // Also set --primary-color if in light mode
-          if (this._config.theme === 'light') {
-            this._mountPoint.style.setProperty('--primary-color', value);
-          }
-        }
-
-        // Parse CENTER_MAPS_MAPS (format: "lat,lon")
-        if (key === 'CENTER_MAPS_MAPS') {
-          const coords = value.split(',').map(v => parseFloat(v.trim()));
-          if (coords.length === 2 && coords.every(n => !isNaN(n))) {
-            this._config.mapCenter = { lat: coords[0], lon: coords[1] };
-          }
-        }
-
-        // Parse ZOOM_MAPS_MAPS
-        if (key === 'ZOOM_MAPS_MAPS') {
-          const zoom = parseInt(value, 10);
-          if (!isNaN(zoom) && zoom > 0) {
-            this._config.mapZoom = zoom;
-          }
-        }
-
-        // Parse ZOOM_FAIRS_MARKETS_MAP
-        if (key === 'ZOOM_FAIRS_MARKETS_MAP') {
-          const zoom = parseInt(value, 10);
-          if (!isNaN(zoom) && zoom > 0) {
-            this._config.fairsMapZoom = zoom;
-          }
-        }
-
-        if (key === 'TITLE') {
-          this._config.title = value;
-        }
-        if (key === 'TITLE_ITALIAN') {
-          this._config.titleItalian = value;
-        }
-        if (key === 'TITLE_ENGLISH') {
-          this._config.titleEnglish = value;
-        }
-        if (key === 'TITLE_GERMAN') {
-          this._config.titleGerman = value;
-        }
-        
-        // Parse LANGUAGE array format: [EN,IT,DE]
-        if (key === 'LANGUAGE') {
-          const match = value.match(/\[([^\]]+)\]/);
-          if (match) {
-            const langs = match[1].split(',').map(l => l.trim().toLowerCase());
-            this._config.languages = langs;
-            // Set default to 'it' if available, otherwise first language
-            if (!this._config.language) {
-              this._config.language = langs.includes('it') ? 'it' : (langs[0] || 'it');
-            }
-          }
-        }
-
-        // Parse SOURCE
-        if (key === 'SOURCE') {
-          this._config.source = value.trim();
-        }
-
-        // Parse THEME_COLOR array format: [LIGHT, DARK]
-        if (key === 'THEME_COLOR') {
-          const match = value.match(/\[([^\]]+)\]/);
-          if (match) {
-            const themes = match[1].split(',').map(t => t.trim().toLowerCase()).filter(t => t);
-            this._config.availableThemes = themes;
-            
-            // If only one theme is available, set it automatically
-            if (themes.length === 1) {
-              this._config.theme = themes[0];
-              // Update attribute if available
-              if (this.setAttribute) {
-                this.setAttribute('theme', themes[0]);
-              }
-              // Apply theme immediately
-              this._applyThemeToShadowRoot();
-            } else if (themes.length > 0) {
-              // If multiple themes available, validate current theme is in the list
-              const currentTheme = this._config.theme || 'light';
-              if (!themes.includes(currentTheme)) {
-                // Current theme is not available, switch to first available
-                this._config.theme = themes[0];
-                if (this.setAttribute) {
-                  this.setAttribute('theme', themes[0]);
-                }
-                // Apply theme immediately
-                this._applyThemeToShadowRoot();
-              }
-            }
-          }
-        }
-
-        // Parse MENU_VISIBILITY array format: [FAIRS, MARKETS, MAP, COMMUNITY]
-        if (key === 'MENU_VISIBILITY') {
-          const match = value.match(/\[([^\]]+)\]/);
-          if (match) {
-            const menuItems = match[1].split(',').map(m => m.trim().toLowerCase());
-            this._config.menuVisibility = menuItems;
-          }
-        }
-
-        // Parse FILTER_ZONE_DEFAULT_VALUE
-        if (key === 'FILTER_ZONE_DEFAULT_VALUE') {
-          if (value) {
-            this._config.filterZoneDefaultValue = value.trim();
-          }
-        }
-
-        // Parse FILTER_CATEGORY_DEFAULT_VALUE
-        if (key === 'FILTER_CATEGORY_DEFAULT_VALUE') {
-          if (value) {
-            this._config.filterCategoryDefaultValue = value.trim();
-          }
-        }
-
-        // Parse NAVBAR_VISIBILITY - boolean format: [TRUE, FALSE] (first value is the setting)
-        if (key === 'NAVBAR_VISIBILITY') {
-          const match = value.match(/\[([^\]]+)\]/);
-          if (match) {
-            const parts = match[1].split(',').map(p => p.trim().toUpperCase());
-            // Use first value as the actual setting
-            this._config.navbarVisibility = parts[0] === 'TRUE';
-          } else {
-            // Fallback: parse as direct boolean string
-            const boolStr = value.trim().toUpperCase();
-            this._config.navbarVisibility = boolStr === 'TRUE';
-          }
-        }
-
-        // Parse LANGUAGE_VISIBILITY - boolean format: [TRUE, FALSE] (first value is the setting)
-        if (key === 'LANGUAGE_VISIBILITY') {
-          const match = value.match(/\[([^\]]+)\]/);
-          if (match) {
-            const parts = match[1].split(',').map(p => p.trim().toUpperCase());
-            this._config.languageVisibility = parts[0] === 'TRUE';
-          } else {
-            const boolStr = value.trim().toUpperCase();
-            this._config.languageVisibility = boolStr === 'TRUE';
-          }
-        }
-
-        // Parse LIGHT_DARK_VISIBILITY - boolean format: [TRUE, FALSE] (first value is the setting)
-        if (key === 'LIGHT_DARK_VISIBILITY') {
-          const match = value.match(/\[([^\]]+)\]/);
-          if (match) {
-            const parts = match[1].split(',').map(p => p.trim().toUpperCase());
-            this._config.lightDarkVisibility = parts[0] === 'TRUE';
-          } else {
-            const boolStr = value.trim().toUpperCase();
-            this._config.lightDarkVisibility = boolStr === 'TRUE';
-          }
-        }
-
-        // Parse FILTER - boolean format: [TRUE, FALSE] (first value is the setting)
-        if (key === 'FILTER') {
-          const match = value.match(/\[([^\]]+)\]/);
-          if (match) {
-            const parts = match[1].split(',').map(p => p.trim().toUpperCase());
-            this._config.filterVisibility = parts[0] === 'TRUE';
-          } else {
-            const boolStr = value.trim().toUpperCase();
-            this._config.filterVisibility = boolStr === 'TRUE';
-          }
-        }
-
-        // Parse PAGE_SIZE
-        if (key === 'PAGE_SIZE') {
-          const pageSize = parseInt(value.trim(), 10);
-          if (!isNaN(pageSize) && pageSize > 0) {
-            this._config.pageSize = pageSize;
-          }
-        }
-
-        // Map SECONDARY_COLOR (light/dark variants handled via CSS variables)
-        // Already set as CSS variable above
-
-        // Map TERTIARY_COLOR (light/dark variants handled via CSS variables)
-        // Already set as CSS variable above
-
-        // COLOR_INDICATOR_POSITION_FAIRS_MAP and COLOR_INDICATOR_POSITION_MARKETS_MAP
-        // Already set as CSS variables above
       }
     });
-    
-    // Final validation: ensure current theme is valid after all config is parsed
+
     const availableThemes = this._config.availableThemes;
     if (availableThemes && Array.isArray(availableThemes) && availableThemes.length > 0) {
       const currentTheme = this._config.theme || 'light';
       if (!availableThemes.includes(currentTheme)) {
-        // Current theme is not available, switch to first available
         this._config.theme = availableThemes[0];
         if (this.setAttribute) {
           this.setAttribute('theme', availableThemes[0]);

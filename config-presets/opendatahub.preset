@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Preset: OPENDATAHUB — aspect values (colors, logos, map indicators).
+# Use this preset to apply these values instead of defining them in .config.
+
+###########
+# ASPECTS
+###########
+
+PRIMARY_COLOR_DARK= #50742F
+SECONDARY_COLOR_DARK= #565E64
+PRIMARY_COLOR_LIGHT= #50742F
+SECONDARY_COLOR_LIGHT= #F3F3F3
+
+BACKGROUND_COLOR_DARK= #000000
+TEXT_COLOR_DARK= #FFFFFF
+BORDER_COLOR_DARK= #565E64
+INPUT_BORDER_COLOR_DARK= #FFFFFF
+
+BACKGROUND_COLOR_LIGHT= #ffffff
+TEXT_COLOR_LIGHT= #000000
+BORDER_COLOR_LIGHT= #565E64
+INPUT_BORDER_COLOR_LIGHT= #000000
+
+LOGO_LIGHT= src/app/logo/OpenDataHub_Logo_dark.svg
+LOGO_DARK= src/app/logo/OpenDataHub_Logo_white.svg
+
+COLOR_INDICATOR_POSITION_FAIRS_MAP= #024c96
+COLOR_INDICATOR_POSITION_MARKETS_MAP= #F39650

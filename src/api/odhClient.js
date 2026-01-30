@@ -41,7 +41,6 @@ async function fetchJson(url, { signal, debug } = {}) {
       mode: 'cors',
       credentials: 'omit', // Don't send cookies to avoid CORS issues
     });
-    
     if (!res.ok) {
       const body = await res.text().catch(() => '');
       throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}${body ? ` - ${body}` : ''}`);
@@ -83,6 +82,12 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     // Add pagesize if provided
     if (pageSize && Number.isFinite(pageSize) && pageSize > 0) {
       params.append('pagesize', String(pageSize));
+    }
+    
+    // Sort by date ascending (oldest first, latest last) for fairs (yearmarket)
+    // Sort by the first schedule entry's Start date
+    if (type === 'yearmarket') {
+      params.append('rawsort', 'OperationSchedule.0.Start');
     }
     
     return joinUrl(base, `v1/ODHActivityPoi?${params.toString()}`);
@@ -235,8 +240,15 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     return district;
   }
 
-  async function fetchRegion(id, { signal, language, fields, removenullvalues } = {}) {
-    let url = joinUrl(base, `v1/Region/${encodeURIComponent(id)}`);
+  async function fetchRegion(idOrUrl, { signal, language, fields, removenullvalues } = {}) {
+    // idOrUrl can be a full URL or a relative path or just an ID
+    let fullUrl = isAbsoluteUrl(idOrUrl) ? idOrUrl : joinUrl(base, idOrUrl);
+    
+    // If it's not a full URL and doesn't start with v1/, treat it as an ID
+    if (!isAbsoluteUrl(idOrUrl) && !idOrUrl.startsWith('v1/')) {
+      fullUrl = joinUrl(base, `v1/Region/${encodeURIComponent(idOrUrl)}`);
+    }
+    
     const params = [];
     
     if (language) params.push(`language=${encodeURIComponent(language)}`);
@@ -245,9 +257,12 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     }
     if (removenullvalues === true) params.push('removenullvalues=true');
     
-    if (params.length > 0) url += '?' + params.join('&');
+    if (params.length > 0) {
+      const separator = fullUrl.includes('?') ? '&' : '?';
+      fullUrl += separator + params.join('&');
+    }
     
-    const region = await fetchJson(url, { signal, debug });
+    const region = await fetchJson(fullUrl, { signal, debug });
     return region;
   }
 
@@ -338,6 +353,86 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     return out;
   }
 
+  async function fetchGeoShapeByName(name, { signal, srid = 'epsg:4326', type = 'region', pageSize = 1000, removenullvalues = false } = {}) {
+    if (!name) {
+      throw new Error('Name is required');
+    }
+
+    // Helper function to escape single quotes for rawfilter
+    const escapeName = (name) => String(name).replace(/'/g, "''");
+    
+    const baseParams = new URLSearchParams();
+    baseParams.append('pagenumber', '1');
+    baseParams.append('pagesize', String(pageSize));
+    baseParams.append('srid', srid);
+    baseParams.append('type', type);
+    baseParams.append('removenullvalues', String(removenullvalues));
+    
+    // Try multiple approaches to find the entity (municipality or region)
+    // 1. Try exact match with original casing
+    const originalName = escapeName(name);
+    let params = new URLSearchParams(baseParams);
+    params.append('rawfilter', `eq(Name, '${originalName}')`);
+    let url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
+    
+    let response = await fetchJson(url, { signal, debug });
+    
+    if (Array.isArray(response?.Items) && response.Items.length > 0) {
+      return response.Items[0];
+    }
+    
+    // 2. Try exact match with uppercase (in case API stores names in uppercase)
+    const upperName = escapeName(name.toUpperCase());
+    params = new URLSearchParams(baseParams);
+    params.append('rawfilter', `eq(Name, '${upperName}')`);
+    url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
+    
+    response = await fetchJson(url, { signal, debug });
+    
+    if (Array.isArray(response?.Items) && response.Items.length > 0) {
+      return response.Items[0];
+    }
+    
+    // 3. Try like() with original casing (partial match, case-sensitive)
+    params = new URLSearchParams(baseParams);
+    params.append('rawfilter', `like(Name, '${originalName}')`);
+    url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
+    
+    response = await fetchJson(url, { signal, debug });
+    
+    if (Array.isArray(response?.Items) && response.Items.length > 0) {
+      // Find the best match (exact case-insensitive match)
+      const exactMatch = response.Items.find(item => 
+        item?.Name?.toLowerCase() === name.toLowerCase()
+      );
+      if (exactMatch) return exactMatch;
+      return response.Items[0];
+    }
+    
+    // 4. Try like() with uppercase
+    params = new URLSearchParams(baseParams);
+    params.append('rawfilter', `like(Name, '${upperName}')`);
+    url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
+    
+    response = await fetchJson(url, { signal, debug });
+    
+    if (Array.isArray(response?.Items) && response.Items.length > 0) {
+      // Find the best match (exact case-insensitive match)
+      const exactMatch = response.Items.find(item => 
+        item?.Name?.toLowerCase() === name.toLowerCase()
+      );
+      if (exactMatch) return exactMatch;
+      return response.Items[0];
+    }
+    
+    return null;
+  }
+
+  // Keep the old function name for backward compatibility
+  async function fetchGeoShapeByMunicipalityName(municipalityName, options = {}) {
+    return await fetchGeoShapeByName(municipalityName, { ...options, type: 'municipality' });
+  }
+
   return {
     fetchAllOrUntil,
     searchItems,
@@ -355,6 +450,8 @@ export function createOdhClient({ apiBase, debug = false, config = null } = {}) 
     fetchAllTourismAssociations,
     fetchAllTourismAssociationsUntil,
     fetchTourismAssociationPageByUrl,
+    fetchGeoShapeByMunicipalityName,
+    fetchGeoShapeByName,
   };
 }
 

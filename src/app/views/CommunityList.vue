@@ -9,10 +9,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     <!-- Breadcrumb -->
     <!-- <Breadcrumb :items="breadcrumbItems" :store="store" /> -->
 
-    <h2 class="wcmc-page-title mb-3 d-md-none">{{ t('community') }}</h2>
-    <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between mb-3">
-      <h2 class="wcmc-page-title d-none d-md-block">{{ t('community') }}</h2>
-      <div class="w-100 w-md-auto" style="max-width: 520px;">
+    <h2 class="wcmc-page-title mb-3 d-lg-none">{{ t('community') }}</h2>
+    <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center justify-content-between mb-3">
+      <h2 class="wcmc-page-title d-none d-lg-block">{{ t('community') }}</h2>
+      <div class="w-100 w-lg-auto" style="max-width: 520px;">
         <SearchBar v-model="query" :placeholder="t('searchPlaceholder')" />
       </div>
     </div>
@@ -35,10 +35,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
     <div v-else class="d-flex flex-column gap-3" style="cursor: pointer;">
       <div v-for="group in visibleGroups" :key="group.id || group.key"
-        class="row g-0 align-items-center py-2 py-md-2 py-lg-2 rounded wcmc-community-list-row"
+        class="row g-0 align-items-center py-2 py-lg-2 rounded wcmc-community-list-row"
         @click="openGroup(group)">
-        <!-- Mobile Layout: Icon, Name/CAP/Badges, Arrow -->
-        <div class="col-12 d-md-none d-flex align-items-center gap-3 px-3">
+        <!-- Mobile/Tablet Layout: Icon, Name/CAP/Badges, Arrow -->
+        <div class="col-12 d-lg-none d-flex align-items-center gap-3 px-3">
           <!-- Logo/Icon -->
           <div class="flex-shrink-0 d-flex align-items-center justify-content-center">
             <img v-if="group.logoUrl" :src="group.logoUrl" :alt="group.name"
@@ -55,20 +55,25 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
           <!-- Name, CAP, and Badges -->
           <div class="flex-grow-1 d-flex flex-column gap-2">
-            <div class="wcmc-community-card__name">{{ group.name }}</div>
+            <div class="wcmc-community-card__name">
+              <template v-for="(part, index) in formattedName(group.name)" :key="index">
+                <span v-if="index > 0" class="wcmc-title-separator">/</span>
+                <span class="wcmc-title-part">{{ part }}</span>
+              </template>
+            </div>
             <div class="d-flex align-items-center gap-3">
               <!-- CAP Column -->
               <div v-if="group.cap" class="wcmc-community-card__cap">{{ group.cap }}</div>
               <!-- Counts Column -->
               <div class="d-flex align-items-center gap-3">
                 <div class="d-flex align-items-center gap-2">
-                  <span class="wcmc-badge-circle flex-shrink-0">
+                  <span class="wcmc-badge-circle flex-shrink-0" :style="fairsBadgeStyle">
                     {{ group.fairCount }}
                   </span>
                   <span style="font-size: 14px;">FIERE</span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <span class="wcmc-badge-circle flex-shrink-0">
+                  <span class="wcmc-badge-circle flex-shrink-0" :style="marketsBadgeStyle">
                     {{ group.marketCount }}
                   </span>
                   <span style="font-size: 14px;">MERCATI</span>
@@ -87,7 +92,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- Desktop Layout: All columns in row -->
         <!-- Logo Column -->
-        <div class="d-none d-md-block col-md-2 col-lg-1 col-xl-1 d-flex align-items-center justify-content-center px-0">
+        <div class="d-none d-lg-block col-lg-1 col-xl-1 d-flex align-items-center justify-content-center px-0">
           <div class="d-flex align-items-center justify-content-center">
             <img v-if="group.logoUrl" :src="group.logoUrl" :alt="group.name"
               style="max-width: 55px; max-height: 55px; object-fit: contain;" />
@@ -103,13 +108,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </div>
 
         <!-- Name and CAP Column -->
-        <div class="d-none d-md-block col-md-2 col-lg-2 col-xl-2 d-flex flex-column gap-2 px-3">
-          <div class="text-truncate">{{ group.name }}</div>
+        <div class="d-none d-lg-block col-lg-2 col-xl-2 d-flex flex-column gap-2 px-3">
+          <div>
+            <template v-for="(part, index) in formattedName(group.name)" :key="index">
+              <span v-if="index > 0" class="wcmc-title-separator">/</span>
+              <span class="wcmc-title-part">{{ part }}</span>
+            </template>
+          </div>
           <div v-if="group.cap" class="text-truncate">{{ group.cap }}</div>
         </div>
 
         <!-- Website Column -->
-        <div class="d-none d-md-block col-md-4 col-lg-4 col-xl-4 d-flex align-items-center gap-2 px-3">
+        <div class="d-none d-lg-block col-lg-4 col-xl-4 d-flex align-items-center gap-2 px-3">
           <div class="text-truncate" style="min-width: 0; flex: 1;" v-if="group.website">
             <svg class="flex-shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2">
@@ -123,7 +133,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </div>
 
         <!-- Email Column -->
-        <div class="d-none d-md-block col-md-2 col-lg-2 col-xl-2 d-flex align-items-center gap-2 px-3">
+        <div class="d-none d-lg-block col-lg-2 col-xl-2 d-flex align-items-center gap-2 px-3">
           <div class="text-truncate" style="min-width: 0; flex: 1;" v-if="group.email">
             <svg class="flex-shrink-0" width="14" height="12" viewBox="0 0 24 24" fill="currentColor">
               <path
@@ -136,11 +146,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- FIERE Badge Column -->
         <div
-          class="d-none d-md-block col-md-1 col-lg-1 col-xl-1 px-2"
+          class="d-none d-lg-block col-lg-1 col-xl-1 px-2"
           style="min-width: 0;">
           <div class="d-flex flex-row align-items-center gap-1 flex-nowrap" style="white-space: nowrap;">
             <span class="flex-shrink-0" style="font-size: 12px;">FIERE</span>
-            <span class="wcmc-badge-circle flex-shrink-0">
+            <span class="wcmc-badge-circle flex-shrink-0" :style="fairsBadgeStyle">
               {{ group.fairCount }}
             </span>
           </div>
@@ -148,18 +158,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- MERCATI Badge Column -->
         <div
-          class="d-none d-md-block col-md-1 col-lg-1 col-xl-1 px-2"
+          class="d-none d-lg-block col-lg-1 col-xl-1 px-2"
           style="min-width: 0;">
           <div class="d-flex flex-row align-items-center gap-1 flex-nowrap" style="white-space: nowrap;">
             <span class="flex-shrink-0" style="font-size: 12px;">MERCATI</span>
-            <span class="wcmc-badge-circle flex-shrink-0">
+            <span class="wcmc-badge-circle flex-shrink-0" :style="marketsBadgeStyle">
               {{ group.marketCount }}
             </span>
           </div>
         </div>
 
         <!-- Arrow Column -->
-        <div class="d-none d-md-block col-md-1 col-lg-1 col-xl-1 d-flex align-items-center justify-content-center px-0">
+        <div class="d-none d-lg-block col-lg-1 col-xl-1 d-flex align-items-center justify-content-center px-0">
           <div class="d-flex align-items-center justify-content-center">
             <svg width="7" height="17" viewBox="0 0 7 17" fill="none" stroke="currentColor" stroke-width="1">
               <path d="M1 1L6 8.5L1 16" />
@@ -169,8 +179,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       </div>
     </div>
 
-    <div class="d-flex justify-content-center justify-content-md-end pt-4">
-      <Pagination v-model="page" :has-prev="hasPrev" :has-next="hasNext" :next-page-number="page + 1" />
+    <div class="d-flex justify-content-center justify-content-lg-end pt-4">
+      <Pagination v-model="page" :has-prev="hasPrev" :has-next="hasNext" :next-page-number="page + 1" :total-pages="totalPages" :loading="communities.loading" :has-results="filteredGroups.length > 0" />
     </div>
   </div>
 </template>
@@ -337,12 +347,48 @@ export default {
       if (this.endIdx < this.filteredGroups.length) return true;
       return !this.communities.done;
     },
+    totalPages() {
+      // If filters are active (query search), always use filtered results count
+      const hasActiveFilters = this.query && this.query.trim().length > 0;
+      
+      if (hasActiveFilters) {
+        // Calculate based on filtered results
+        if (this.filteredGroups.length === 0) return 1;
+        return Math.ceil(this.filteredGroups.length / this.pageSize);
+      }
+      
+      // No filters active - use TotalPages from API response if available
+      if (this.communities.paginationMeta && this.communities.paginationMeta.TotalPages !== null && this.communities.paginationMeta.TotalPages > 0) {
+        return this.communities.paginationMeta.TotalPages;
+      }
+      
+      // Fallback to computed value based on filtered groups
+      if (this.filteredGroups.length === 0) return 1;
+      // Estimate based on current filtered groups, but if not done loading, add some buffer
+      const basePages = Math.ceil(this.filteredGroups.length / this.pageSize);
+      // If still loading, we don't know the exact total, so return null to let Pagination estimate
+      return this.communities.done ? basePages : null;
+    },
     breadcrumbItems() {
       return [
         {
           label: this.t('community'),
         },
       ];
+    },
+    fairsBadgeStyle() {
+      const fairsColor = this.getConfigColor('--color-indicator-position-fairs-map', '#024C96');
+      return {
+        backgroundColor: fairsColor,
+        color: '#ffffff',
+      };
+    },
+    marketsBadgeStyle() {
+      const marketsColor = this.getConfigColor('--color-indicator-position-markets-map', '#F39650');
+      return {
+        backgroundColor: marketsColor,
+        color: '#ffffff',
+      };
     },
     areCountsLoading() {
       // Reference version counter to ensure reactivity
@@ -361,7 +407,8 @@ export default {
   },
   async mounted() {
     this.isMounted = true;
-    await this.store.ensureCommunitiesLoaded(this.endIdx);
+    // Load all communities - use a very high number to ensure all pages are loaded
+    await this.store.ensureCommunitiesLoaded(999999);
     // Load counts for visible communities
     if (this.isMounted) {
       await this.loadCountsForVisible();
@@ -463,6 +510,26 @@ export default {
     openGroup(g) {
       if (!g || !g.id) return;
       this.store.go('communityDetail', { id: g.id, name: g.name || 'Community' });
+    },
+    formattedName(name) {
+      if (!name) return [];
+      const title = String(name).toUpperCase();
+      // Split on "/" first
+      return title.split('/').map(part => part.trim()).filter(part => part.length > 0);
+    },
+    getConfigColor(cssVarName, fallback) {
+      try {
+        // CSS variables are set on .wcmc-root in shadow DOM
+        const rootEl = document.querySelector('webcomp-market-calendar')?.shadowRoot?.querySelector('.wcmc-root');
+        if (rootEl) {
+          const computedStyle = getComputedStyle(rootEl);
+          const color = computedStyle.getPropertyValue(cssVarName).trim();
+          if (color) return color;
+        }
+      } catch (e) {
+        // Fallback on error
+      }
+      return fallback;
     },
     t(key) {
       const TRANSLATIONS = {

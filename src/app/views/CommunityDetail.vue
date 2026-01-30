@@ -181,7 +181,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         <path
                           d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
                       </svg>
-                      <span class="text-truncate flex-fill min-w-0">{{ t('phone') }}</span>
+                      <span class="text-truncate flex-fill min-w-0"> - </span>
                     </div>
                     <div v-if="communityData.referentEmail"
                       class="wcmc-community-detail__referent-info d-flex align-items-center gap-2">
@@ -190,19 +190,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         <path
                           d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                       </svg>
-                      <span class="text-truncate flex-fill min-w-0">{{ t('mail') }}</span>
-                    </div>
-                    <div class="d-flex gap-2 mt-auto">
-                      <button v-if="communityData.referentPhone"
-                        class="wcmc-community-detail__contact-btn btn btn-primary flex-fill" type="button"
-                        @click="callReferent">
-                        {{ t('call') }}
-                      </button>
-                      <button v-if="communityData.referentEmail"
-                        class="wcmc-community-detail__contact-btn btn btn-primary flex-fill" type="button"
-                        @click="contactReferent">
-                        {{ t('write') }}
-                      </button>
+                      <span class="text-truncate flex-fill min-w-0"> - </span>
                     </div>
                   </template>
                 </div>
@@ -235,7 +223,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                           <path
                             d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
                         </svg>
-                        <span class="text-truncate flex-fill min-w-0">{{ t('phone') }}</span>
+                        <span class="text-truncate flex-fill min-w-0"> - </span>
                       </div>
                       <div v-if="communityData.referentEmail"
                         class="wcmc-community-detail__referent-info d-flex align-items-center gap-2">
@@ -244,20 +232,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                           <path
                             d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                         </svg>
-                        <span class="text-truncate flex-fill min-w-0">{{ t('mail') }}</span>
+                        <span class="text-truncate flex-fill min-w-0"> - </span>
                       </div>
-                    </div>
-                    <div class="d-flex gap-2 mt-auto">
-                      <button v-if="communityData.referentPhone"
-                        class="wcmc-community-detail__contact-btn btn btn-primary flex-fill" type="button"
-                        @click="callReferent">
-                        {{ t('call') }}
-                      </button>
-                      <button v-if="communityData.referentEmail"
-                        class="wcmc-community-detail__contact-btn btn btn-primary flex-fill" style="max-width: 10rem" type="button"
-                        @click="contactReferent">
-                        {{ t('write') }}
-                      </button>
                     </div>
                   </template>
                 </div>
@@ -273,7 +249,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <div class="wcmc-community-detail__map-container w-100 py-2">
               <LeafletMap :height="'100%'" :markets="relatedMarkets" :fairs="relatedFairs" :show-markets="true"
                 :show-fairs="true" :initial-center="mapCenter" :initial-zoom="mapZoom" :lang="config.language"
-                :config="config" />
+                :config="config" :geo-shape="geoShapeData" />
             </div>
           </div>
 
@@ -281,12 +257,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <div class="col-12 col-lg-8 ps-lg-4">
             <div class="row g-0">
               <!-- Row 1: Related Fairs Section -->
-              <div class="col-12 mb-4">
+              <div class="col-12">
                 <div class="wcmc-community-detail__related-section wcmc-community-detail__related-section--fairs">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
                     <h2 class="wcmc-community-detail__related-title mb-0">
                       {{ t('relatedFairs') }}
-                      <span class="badge wcmc-badge-circle ms-2">{{ relatedFairs.length }}</span>
+                      <span class="badge wcmc-badge-circle ms-2" :style="fairsBadgeStyle">{{ relatedFairs.length }}</span>
                     </h2>
                     <div v-if="relatedFairs.length > 0" class="d-flex gap-2">
                       <button class="btn btn-outline-light btn-sm wcmc-slider-btn" :disabled="!canScrollFairsLeft"
@@ -306,7 +282,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </div>
                   </div>
                   <div ref="fairsSlider"
-                    class="wcmc-community-detail__related-cards wcmc-slider-container d-flex flex-row gap-3 align-items-stretch flex-nowrap overflow-hidden pb-2"
+                    class="wcmc-community-detail__related-cards wcmc-slider-container d-flex flex-row gap-3 align-items-stretch flex-nowrap overflow-hidden pb-3"
                     @scroll="updateFairsScrollState">
                     <div v-for="fair in relatedFairs" :key="fair.id"
                       class="wcmc-community-detail__related-card flex-shrink-0 d-flex flex-column"
@@ -320,10 +296,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <!-- Row 2: Related Markets Section -->
               <div class="col-12">
                 <div class="wcmc-community-detail__related-section wcmc-community-detail__related-section--markets">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
                     <h2 class="wcmc-community-detail__related-title mb-0">
                       {{ t('relatedMarkets') }}
-                      <span class="badge wcmc-badge-circle ms-2">{{ relatedMarkets.length }}</span>
+                      <span class="badge wcmc-badge-circle ms-2" :style="marketsBadgeStyle">{{ relatedMarkets.length }}</span>
                     </h2>
                     <div v-if="relatedMarkets.length > 0" class="d-flex gap-2">
                       <button class="btn btn-outline-light btn-sm wcmc-slider-btn" :disabled="!canScrollMarketsLeft"
@@ -416,6 +392,7 @@ function getReferentInfo(raw, lang) {
   };
 }
 
+
 export default {
   name: 'CommunityDetail',
   components: { ItemCard, CommunityDetailSkeleton, EmptyState, ErrorAlert, LeafletMap, Breadcrumb },
@@ -440,6 +417,9 @@ export default {
       canScrollFairsRight: false,
       canScrollMarketsLeft: false,
       canScrollMarketsRight: false,
+      geoShapeData: [],
+      loadingGeoShape: false,
+      geoShapeError: null,
     };
   },
   computed: {
@@ -502,12 +482,24 @@ export default {
       };
     },
     relatedMarkets() {
-      return this.relatedMarketsData.map((r) =>
+      // Filter to ensure only market items are included (safety check)
+      const filtered = this.relatedMarketsData.filter((r) => {
+        const id = String(r?.Id || '');
+        return id.includes(':market:') && !id.includes(':yearmarket:');
+      });
+      
+      return filtered.map((r) =>
         normalizeOdhItem(r, { lang: this.config.language, type: 'market' })
       );
     },
     relatedFairs() {
-      const normalized = this.relatedFairsData.map((r) =>
+      // Filter to ensure only yearmarket items are included (safety check)
+      const filtered = this.relatedFairsData.filter((r) => {
+        const id = String(r?.Id || '');
+        return id.includes(':yearmarket:');
+      });
+      
+      const normalized = filtered.map((r) =>
         normalizeOdhItem(r, { lang: this.config.language, type: 'yearmarket' })
       );
 
@@ -562,6 +554,20 @@ export default {
         },
       ];
     },
+    fairsBadgeStyle() {
+      const fairsColor = this.getConfigColor('--color-indicator-position-fairs-map', '#024C96');
+      return {
+        backgroundColor: fairsColor,
+        color: '#ffffff',
+      };
+    },
+    marketsBadgeStyle() {
+      const marketsColor = this.getConfigColor('--color-indicator-position-markets-map', '#F39650');
+      return {
+        backgroundColor: marketsColor,
+        color: '#ffffff',
+      };
+    },
   },
   watch: {
     id: {
@@ -605,9 +611,9 @@ export default {
       },
     },
   },
-  async mounted() {
-    await this.loadCommunityData();
+  mounted() {
     // Initialize scroll state after component is mounted
+    // Note: loadCommunityData() is already called by the watcher with immediate: true
     this.$nextTick(() => {
       this.updateFairsScrollState();
       this.updateMarketsScrollState();
@@ -625,6 +631,9 @@ export default {
     async loadCommunityData() {
       this.loadingCommunity = true;
       this.communityError = null;
+          // Reset GeoShape data when loading a new community
+      this.geoShapeData = [];
+      this.geoShapeError = null;
       try {
         const community = await this.store.fetchCommunityById(this.id);
 
@@ -635,14 +644,14 @@ export default {
             this.loadRelatedFairs(),
             this.loadRelatedMarkets(),
           ]);
+          // Load GeoShape after fairs are loaded so we can use municipality from fairs
+          // This will only be called once per community due to the guard in loadGeoShapeData
+          await this.loadGeoShapeData();
         } else {
-          console.warn('[CommunityDetail] loadCommunityData: Community not found for id =', this.id);
           this.communityError = 'Community not found';
         }
       } catch (e) {
         this.communityError = e?.message || String(e);
-        console.error('[CommunityDetail] Failed to load community:', e);
-        console.error('[CommunityDetail] Error stack:', e?.stack);
       } finally {
         this.loadingCommunity = false;
       }
@@ -683,8 +692,6 @@ export default {
         }
 
         if (locfilter) {
-
-
           const items = await this.store.fetchSimilarItems({
             type: 'yearmarket',
             locfilter,
@@ -692,13 +699,9 @@ export default {
           });
 
           this.relatedFairsData = items;
-        } else {
-          console.warn('[CommunityDetail] loadRelatedFairs: No locfilter could be determined');
         }
       } catch (e) {
         this.fairsError = e?.message || String(e);
-        console.error('[CommunityDetail] Failed to load related fairs:', e);
-        console.error('[CommunityDetail] Error stack:', e?.stack);
       } finally {
         this.loadingFairs = false;
       }
@@ -787,12 +790,9 @@ export default {
           });
 
           this.relatedMarketsData = items;
-        } else {
-          console.warn('[CommunityDetail] loadRelatedMarkets: No locfilter could be determined');
         }
       } catch (e) {
         this.marketsError = e?.message || String(e);
-        console.error('[CommunityDetail] Failed to load related markets:', e);
       } finally {
         this.loadingMarkets = false;
       }
@@ -826,6 +826,107 @@ export default {
       const { scrollLeft, scrollWidth, clientWidth } = slider;
       this.canScrollMarketsLeft = scrollLeft > 0;
       this.canScrollMarketsRight = scrollLeft < scrollWidth - clientWidth - 1; // -1 for rounding
+    },
+    async loadGeoShapeData() {
+      // Prevent multiple calls: if already loaded or currently loading, skip
+      if ((this.geoShapeData && this.geoShapeData.length > 0) || this.loadingGeoShape) {
+        return;
+      }
+
+      if (!this.communityItem) {
+        return;
+      }
+
+      this.loadingGeoShape = true;
+      this.geoShapeError = null;
+      try {
+        // Collect all unique municipalities from both fairs and markets
+        const municipalitiesSet = new Set();
+        
+        // Get municipalities from normalized relatedFairs
+        if (this.relatedFairs && this.relatedFairs.length > 0) {
+          this.relatedFairs.forEach(fair => {
+            if (fair?.municipality) {
+              municipalitiesSet.add(fair.municipality);
+            }
+          });
+        }
+        
+        // Get municipalities from normalized relatedMarkets
+        if (this.relatedMarkets && this.relatedMarkets.length > 0) {
+          this.relatedMarkets.forEach(market => {
+            if (market?.municipality) {
+              municipalitiesSet.add(market.municipality);
+            }
+          });
+        }
+        
+        // If not found in normalized data, try from raw data
+        if (municipalitiesSet.size === 0) {
+          // Try from raw fairs data
+          if (this.relatedFairsData && this.relatedFairsData.length > 0) {
+            this.relatedFairsData.forEach(fair => {
+              const municipalityName = getMunicipalityName(fair, this.config.language);
+              if (municipalityName) {
+                municipalitiesSet.add(municipalityName);
+              }
+            });
+          }
+          
+          // Try from raw markets data
+          if (this.relatedMarketsData && this.relatedMarketsData.length > 0) {
+            this.relatedMarketsData.forEach(market => {
+              const municipalityName = getMunicipalityName(market, this.config.language);
+              if (municipalityName) {
+                municipalitiesSet.add(municipalityName);
+              }
+            });
+          }
+        }
+        
+        if (municipalitiesSet.size === 0) {
+          this.loadingGeoShape = false;
+          return;
+        }
+        
+        // Fetch geoshapes for all unique municipalities
+        const municipalitiesArray = Array.from(municipalitiesSet);
+        const geoShapePromises = municipalitiesArray.map(municipalityName =>
+          this.store.fetchGeoShapeByName(String(municipalityName), {
+            srid: 'epsg:4326',
+            type: 'municipality',
+            pageSize: 1000,
+            removenullvalues: false,
+          }).catch(e => {
+            // Log error but don't fail the entire operation
+            console.warn(`Failed to fetch geoshape for municipality ${municipalityName}:`, e);
+            return null;
+          })
+        );
+        
+        const geoShapes = await Promise.all(geoShapePromises);
+        
+        // Filter out null values (failed fetches)
+        this.geoShapeData = geoShapes.filter(shape => shape !== null);
+      } catch (e) {
+        this.geoShapeError = e?.message || String(e);
+      } finally {
+        this.loadingGeoShape = false;
+      }
+    },
+    getConfigColor(cssVarName, fallback) {
+      try {
+        // CSS variables are set on .wcmc-root in shadow DOM
+        const rootEl = document.querySelector('webcomp-market-calendar')?.shadowRoot?.querySelector('.wcmc-root');
+        if (rootEl) {
+          const computedStyle = getComputedStyle(rootEl);
+          const color = computedStyle.getPropertyValue(cssVarName).trim();
+          if (color) return color;
+        }
+      } catch (e) {
+        // Fallback on error
+      }
+      return fallback;
     },
     t(key) {
       const TRANSLATIONS = {

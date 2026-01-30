@@ -1,3 +1,8 @@
+/* SPDX-FileCopyrightText: NOI Techpark <digital@noi.bz.it>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 /* Dark mode for Leaflet controls */
 .wcmc-root.dark .leaflet-bar a {
     background-color: #1a1a1a !important;

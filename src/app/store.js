@@ -12,6 +12,7 @@ function emptyDataset() {
     done: false,
     loading: false,
     error: null,
+    paginationMeta: null, // { TotalPages, TotalResults, CurrentPage }
   };
 }
 
@@ -83,8 +84,16 @@ export function createStore(config) {
       }
 
       while (ds.nextPageUrl && ds.itemsRaw.length < minItems) {
-        const { items, nextPage } = await client.fetchPageByUrl(ds.nextPageUrl, { signal });
+        const { items, nextPage, page } = await client.fetchPageByUrl(ds.nextPageUrl, { signal });
         ds.itemsRaw.push(...items);
+        // Store pagination metadata from the first page response
+        if (page && !ds.paginationMeta && (page.TotalPages !== undefined || page.TotalResults !== undefined)) {
+          ds.paginationMeta = {
+            TotalPages: page.TotalPages || null,
+            TotalResults: page.TotalResults || null,
+            CurrentPage: page.CurrentPage || null,
+          };
+        }
         ds.nextPageUrl = nextPage || null;
         if (!ds.nextPageUrl) ds.done = true;
       }
@@ -177,8 +186,17 @@ export function createStore(config) {
       while (ds.nextPageUrl && ds.itemsRaw.length < minItems) {
         // Use fetchTourismAssociationPageByUrl if available, otherwise fallback to fetchPageByUrl
         const fetchFn = client.fetchTourismAssociationPageByUrl || client.fetchPageByUrl;
-        const { items, nextPage } = await fetchFn(ds.nextPageUrl, { signal });
+        const result = await fetchFn(ds.nextPageUrl, { signal });
+        const { items, nextPage, page } = result;
         
+        // Store pagination metadata from the first page response
+        if (page && !ds.paginationMeta && (page.TotalPages !== undefined || page.TotalResults !== undefined)) {
+          ds.paginationMeta = {
+            TotalPages: page.TotalPages || null,
+            TotalResults: page.TotalResults || null,
+            CurrentPage: page.CurrentPage || null,
+          };
+        }
         
         ds.itemsRaw.push(...items);
         ds.nextPageUrl = nextPage || null;
@@ -211,6 +229,14 @@ export function createStore(config) {
       const wanted = String(id);
       return state.communities.itemsRaw.find((it) => String(it?.Id) === wanted) || null;
     }
+  }
+
+  async function fetchGeoShapeByMunicipalityName(municipalityName, options = {}) {
+    return await client.fetchGeoShapeByMunicipalityName(municipalityName, options);
+  }
+
+  async function fetchGeoShapeByName(name, options = {}) {
+    return await client.fetchGeoShapeByName(name, options);
   }
 
   watch(
@@ -249,6 +275,8 @@ export function createStore(config) {
     fetchTourismAssociation,
     ensureCommunitiesLoaded,
     fetchCommunityById,
+    fetchGeoShapeByMunicipalityName,
+    fetchGeoShapeByName,
   };
 }
 

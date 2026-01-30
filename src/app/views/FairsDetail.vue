@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
      
 
       <!-- MOBILE Hero Section -->
-      <div class="d-md-none wcmc-detail-mobile-hero rounded overflow-hidden position-relative mb-4" 
+      <div class="d-xl-none wcmc-detail-mobile-hero rounded overflow-hidden position-relative mb-4" 
            :style="mobileHeroBackgroundStyle">
         <!-- Dark Overlay -->
         <div class="wcmc-detail-mobile-overlay position-absolute top-0 start-0 w-100 h-100"></div>
@@ -91,15 +91,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
 
             <!-- Frequency -->
-            <div v-if="frequency || USE_MOCK_DATA" class="wcmc-detail-mobile-info-section mb-3">
-              <div class="d-flex align-items-start gap-2">
-                <svg class="flex-shrink-0 mt-1" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+            <div v-if="raw" class="wcmc-detail-mobile-info-section mb-3">
+              <div class="wcmc-market-day-card__meta d-flex align-items-center gap-2">
+                <svg class="wcmc-market-day-card__icon flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
                 </svg>
-                <div>
-                  <div class="text-white text-uppercase fw-bold mb-1">{{ t('frequency') }}</div>
-                  <div class="text-white opacity-75">{{ frequency || "-" }}</div>
-                </div>
+                <span class="text-white">{{ frequency }}</span>
               </div>
             </div>
 
@@ -113,7 +110,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
 
             <!-- Gallery Link -->
-            <div v-if="carouselImages.length > 1" class="wcmc-detail-mobile-info-section mb-3">
+            <div v-if="validCarouselImages.length > 1" class="wcmc-detail-mobile-info-section mb-3">
               <a href="#" @click.prevent="scrollToGallery" class="text-white text-decoration-underline fw-medium">
                 Vai alla gallery
               </a>
@@ -138,53 +135,73 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       </div>
 
       <!-- MOBILE Map Section -->
-      <div v-if="mapCoords" class="d-md-none wcmc-detail-mobile-map rounded overflow-hidden mb-4 p-2">
+      <div v-if="mapCoords" class="d-xl-none wcmc-detail-mobile-map rounded overflow-hidden mb-4 p-2">
         <div class="p-3 pb-0">
           <h2 class="text-uppercase fw-bold mb-3 wcmc-section-title">{{ t('locationAndServices') }}</h2>
         </div>
-        <div class="wcmc-detail-rect5-map position-relative w-100 overflow-hidden wcmc-map-container-height">
-          <div v-if="embedError" class="alert alert-danger m-3">{{ embedError }}</div>
-          <div v-else-if="!scriptReady" class="text-secondary small p-3">Loading map…</div>
-          <odh-activity-poi v-if="scriptReady" category-filter="" :language="config.language"
-            :lat="String(mapCoords.lat)" :lon="String(mapCoords.lon)" radius="" showradius="false"
-            :zoom="fairsMapZoom" show-current-location="true" :marker-color="mapMarkerColor" categories="essen trinken"></odh-activity-poi>
+        <div class="wcmc-detail-rect5-map position-relative w-100 overflow-hidden wcmc-map-container-height" style="color: #000">
+          <div v-if="mapIframeUrl" class="card-body p-0 h-100">
+            <p id="twrap" class="card-text text-center mb-0 h-100">
+              <iframe id="tframe" class="w-100 h-100" style="border: none;" frameborder="0" :src="mapIframeUrl"></iframe>
+            </p>
+          </div>
         </div>
       </div>
 
       <!-- DESKTOP Hero Section -->
-      <div class="d-none d-md-block wcmc-detail-hero-card rounded p-4 mb-4">
+      <div class="d-none d-xl-block wcmc-detail-hero-card rounded p-4 mb-4">
         <div class="row g-4">
 
           <!-- LEFT: Carousel & Thumbnails -->
-          <div class="col-12 col-lg-4 col-xl-3">
-            <div v-if="carouselImages.length > 0" class="mb-3">
-              <div :id="`fairCarousel-${id}`" class="carousel slide rounded overflow-hidden wcmc-aspect-ratio-1"
+          <div class="col-12 col-lg-2 col-xl-2">
+            <div class="mb-3">
+              <div v-if="validCarouselImages.length > 0" :id="`fairCarousel-${id}`" class="carousel slide rounded overflow-hidden wcmc-aspect-ratio-1"
                 ref="heroCarousel">
                 <!-- Slides -->
                 <div class="carousel-inner h-100">
-                  <div v-for="(img, idx) in carouselImages" :key="`slide-${idx}`" class="carousel-item h-100"
+                  <div v-for="(img, idx) in validCarouselImages" :key="`slide-${idx}`" class="carousel-item h-100"
                     :class="{ active: idx === 0 }">
-                    <img :src="img" class="d-block w-100 h-100 wcmc-object-fit-cover"
-                      :alt="`${item.title} - Image ${idx + 1}`" />
+                    <img v-if="!imageErrors[img]" 
+                      :src="img" 
+                      class="d-block w-100 h-100 wcmc-object-fit-cover wcmc-lightbox-trigger"
+                      :alt="`${item.title} - Image ${idx + 1}`"
+                      @error="handleImageError($event, img)"
+                      @load="handleImageLoad(img)"
+                      @click="openLightbox(idx)" />
+                    <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21,15 16,10 5,21"/>
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
                 <!-- Controls -->
-                <button v-if="carouselImages.length > 1" class="carousel-control-prev" type="button"
+                <button v-if="validCarouselImages.length > 1" class="carousel-control-prev" type="button"
                   :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="prev">
                   <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                   <span class="visually-hidden">Previous</span>
                 </button>
-                <button v-if="carouselImages.length > 1" class="carousel-control-next" type="button"
+                <button v-if="validCarouselImages.length > 1" class="carousel-control-next" type="button"
                   :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="next">
                   <span class="carousel-control-next-icon" aria-hidden="true"></span>
                   <span class="visually-hidden">Next</span>
                 </button>
               </div>
+              <!-- Placeholder when no images -->
+              <div v-else class="wcmc-fair-card__image--placeholder w-100 rounded overflow-hidden wcmc-aspect-ratio-1 d-flex align-items-center justify-content-center">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21,15 16,10 5,21"/>
+                </svg>
+              </div>
             </div>
 
             <!-- Thumbnail Gallery with Pagination -->
-            <div v-if="carouselImages.length > 0" class="wcmc-thumbnail-gallery w-100">
+            <div v-if="validCarouselImages.length > 0" class="wcmc-thumbnail-gallery w-100">
 
               <!-- Navigation Arrows + Thumbnails Container -->
               <div class="d-flex align-items-center gap-2">
@@ -205,7 +222,19 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                       'wcmc-thumbnail--active': getGlobalThumbnailIndex(idx) === activeSlideIndex,
                        'wcmc-thumbnail--dimmed': getGlobalThumbnailIndex(idx) !== activeSlideIndex
                      }" @click="goToSlide(getGlobalThumbnailIndex(idx))">
-                    <img class="w-100 h-100 wcmc-object-fit-cover" :src="img" :alt="`Thumbnail ${getGlobalThumbnailIndex(idx) + 1}`" />
+                    <img v-if="!imageErrors[img]"
+                      class="w-100 h-100 wcmc-object-fit-cover" 
+                      :src="img" 
+                      :alt="`Thumbnail ${getGlobalThumbnailIndex(idx) + 1}`"
+                      @error="handleImageError($event, img)"
+                      @load="handleImageLoad(img)" />
+                    <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21,15 16,10 5,21"/>
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
@@ -229,7 +258,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           </div>
 
           <!-- RIGHT: Information -->
-          <div class="col-12 col-lg-8 col-xl-9">
+          <div class="col-12 col-lg-10 col-xl-10">
             <!-- Header: Actions -->
             <div class="row">
               <span class="wcmc-detail-title fs-4 mb-4 col-8">{{ item.title }}</span>
@@ -299,19 +328,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     v-else 
                     class="small text-decoration-underline wcmc-padding-left-dynamic-2"
                   >
-                    {{ fullAddress || "-" }}
+                    {{ fullAddress || "_" }}
                   </div>
                 </div>
 
-                <div v-if="frequency || USE_MOCK_DATA" class="mb-3">
-                  <div class="d-flex align-items-center gap-2 text-uppercase small fw-semibold mb-1">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                      <path
-                        d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
+                <div v-if="raw" class="mb-3">
+                  <div class="wcmc-market-day-card__meta d-flex align-items-center gap-2">
+                    <svg class="wcmc-market-day-card__icon flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
                     </svg>
-                    {{ t('frequency') }}
+                    <span>{{ frequency }}</span>
                   </div>
-                  <div class="small wcmc-padding-left-dynamic-3">{{ frequency || "-" }}</div>
                 </div>
               </div>
 
@@ -363,25 +390,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <h2 class="wcmc-detail-section-title fw-semibold text-uppercase mb-3">{{ t('locationAndServices') }}</h2>
 
           <!-- Map (1359x577px at x:45, y:561) -->
-          <div v-if="mapCoords" class="wcmc-detail-rect5-map position-relative w-100 rounded overflow-hidden mt-4 wcmc-detail-map-height">
-            <!-- THIS IS NOT MY SEARCH BAR! -->
-            <div class="wcmc-detail-rect5-map-search">
-              <div class="wcmc-search-wrapper">
-                <div class="wcmc-search-box">
-                  <input id="wcmc-map-search" name="map-search" type="search" class="wcmc-search-input"
-                    placeholder="Search" v-model="exhibitorSearchQuery" />
-                  <svg class="wcmc-search-icon" width="16" height="17" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                  </svg>
-                </div>
-              </div>
+          <div v-if="mapCoords" class="wcmc-detail-rect5-map position-relative w-100 rounded overflow-hidden mt-4 wcmc-detail-map-height" style="color: #000">
+            <div v-if="mapIframeUrl" class="card-body p-0 h-100">
+              <p id="twrap" class="card-text text-center mb-0 h-100">
+                <iframe id="tframe" class="w-100 h-100" style="border: none;" frameborder="0" :src="mapIframeUrl"></iframe>
+              </p>
             </div>
-            <div v-if="embedError" class="alert alert-danger">{{ embedError }}</div>
-            <div v-else-if="!scriptReady" class="text-secondary small">Loading map…</div>
-            <odh-activity-poi v-if="scriptReady" category-filter="" :language="config.language"
-              :lat="String(mapCoords.lat)" :lon="String(mapCoords.lon)" radius="" showradius="false"
-              :zoom="fairsMapZoom" show-current-location="true" :marker-color="mapMarkerColor" category="essen trinken"></odh-activity-poi>
           </div>
         </div>
       </div>
@@ -409,7 +423,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <!-- Category Filter Multiselect -->
           <div class="wcmc-filter-group position-relative wcmc-flex-1">
             <div 
-              class="wcmc-filter-select form-select d-flex align-items-center justify-content-between wcmc-cursor-pointer wcmc-user-select-none" 
+              class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between wcmc-cursor-pointer wcmc-user-select-none" 
               @click="toggleCategoryDropdown"
               :class="{ 'border-primary': isCategoryDropdownOpen }"
             >
@@ -419,13 +433,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                   {{ exhibitorCategoryFilters.length === 1 ? exhibitorCategoryFilters[0] : `${exhibitorCategoryFilters.length} ${t('categoriesSelected')}` }}
                 </span>
               </div>
-              <svg class="wcmc-filter-chevron ms-2 flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor">
+              <svg class="wcmc-filter-chevron ms-2 flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" :style="{ transform: isCategoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
                 <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
 
             <!-- Dropdown Menu -->
-            <div v-if="isCategoryDropdownOpen" class="wcmc-multiselect-dropdown shadow rounded position-absolute w-100 bg-white p-2 mt-1 wcmc-dropdown-menu-base">
+            <div v-if="isCategoryDropdownOpen" class="wcmc-multiselect-dropdown wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1" @click.stop>
+              <!-- Search input for categories -->
+              <div class="mb-2">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  :placeholder="t('search')"
+                  :value="categorySearchQuery"
+                  @input="categorySearchQuery = $event.target.value"
+                  @click.stop
+                />
+              </div>
               <div class="form-check mb-2">
                  <input 
                   class="form-check-input" 
@@ -439,7 +464,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </label>
               </div>
               <hr class="my-1">
-              <div v-for="cat in availableExhibitorCategories" :key="cat" class="form-check mb-1">
+              <div v-for="cat in filteredExhibitorCategoriesForSearch" :key="cat" class="form-check mb-1">
                 <input 
                   class="form-check-input" 
                   type="checkbox" 
@@ -450,6 +475,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <label class="form-check-label w-100 small wcmc-cursor-pointer" :for="`cat-${cat}`">
                   {{ cat }}
                 </label>
+              </div>
+              <div v-if="filteredExhibitorCategoriesForSearch.length === 0 && categorySearchQuery.trim()" class="text-muted text-center p-2 small">
+                {{ t('noResults') }}
               </div>
             </div>
 
@@ -477,7 +505,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </div>
 
         <!-- MOBILE Exhibitors List -->
-        <div class="d-md-none">
+        <div class="d-xl-none">
           <!-- Headers -->
           <div class="wcmc-mobile-exhibitors-headers pb-3">
             <div class="d-flex align-items-center justify-content-between text-uppercase wcmc-sort-select-base">
@@ -520,7 +548,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </div>
 
         <!-- DESKTOP Table -->
-        <div class="table-responsive d-none d-md-block">
+        <div class="table-responsive d-none d-xl-block">
           <table class="table align-middle wcmc-exhibitors-table">
             <thead>
               <tr>
@@ -605,23 +633,36 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       </div>
 
       <!-- Image Gallery Section -->
-      <div v-if="carouselImages.length > 0" class="d-md-none mt-4">
-        <div class="row g-2">
+      <div class="d-xl-none mt-4">
+        <div v-if="validCarouselImages.length > 0" class="row g-2">
           <!-- Main Carousel (Left) -->
-          <div class="col-9">
+          <div class="col-9 col-lg-10">
              <div :id="`fairCarousel-${id}`" class="carousel slide rounded overflow-hidden wcmc-carousel-height" ref="heroCarousel">
                 <!-- Slides -->
                 <div class="carousel-inner h-100">
-                  <div v-for="(img, idx) in carouselImages" :key="`slide-${idx}`" class="carousel-item h-100" :class="{ active: idx === 0 }">
-                    <img :src="img" class="d-block w-100 h-100 wcmc-object-fit-cover" :alt="`${item.title} - Image ${idx + 1}`" />
+                  <div v-for="(img, idx) in validCarouselImages" :key="`slide-${idx}`" class="carousel-item h-100" :class="{ active: idx === 0 }">
+                    <img v-if="!imageErrors[img]"
+                      :src="img" 
+                      class="d-block w-100 h-100 wcmc-object-fit-cover wcmc-lightbox-trigger" 
+                      :alt="`${item.title} - Image ${idx + 1}`"
+                      @error="handleImageError($event, img)"
+                      @load="handleImageLoad(img)"
+                      @click="openLightbox(idx)" />
+                    <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21,15 16,10 5,21"/>
+                      </svg>
+                    </div>
                   </div>
                 </div>
                 <!-- Controls -->
-                <button v-if="carouselImages.length > 1" class="carousel-control-prev" type="button" :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="prev">
+                <button v-if="validCarouselImages.length > 1" class="carousel-control-prev" type="button" :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="prev">
                   <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                   <span class="visually-hidden">Previous</span>
                 </button>
-                <button v-if="carouselImages.length > 1" class="carousel-control-next" type="button" :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="next">
+                <button v-if="validCarouselImages.length > 1" class="carousel-control-next" type="button" :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="next">
                   <span class="carousel-control-next-icon" aria-hidden="true"></span>
                   <span class="visually-hidden">Next</span>
                 </button>
@@ -629,25 +670,45 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           </div>
 
           <!-- Vertical Thumbnails (Right) -->
-          <div class="col-3">
-              <div v-if="carouselImages.length > 0" class="wcmc-thumbnail-gallery h-100">
+          <div class="col-3 col-lg-2">
+              <div v-if="validCarouselImages.length > 0" class="wcmc-thumbnail-gallery h-100">
                   <div class="d-flex flex-column gap-2 h-100">
                       <!-- Thumbnails (showing first 4 or visible ones based on height) -->
                       <!-- Force overflow hidden or allow scroll if needed, but styling implies static list -->
-                      <div v-for="(img, idx) in carouselImages.slice(0, 4)" :key="`thumb-mobile-${idx}`" 
+                      <div v-for="(img, idx) in validCarouselImages.slice(0, 4)" :key="`thumb-mobile-${idx}`" 
                            class="wcmc-thumbnail flex-shrink-0 rounded overflow-hidden position-relative wcmc-thumbnail-item" 
                            :class="{ 
                              'wcmc-thumbnail--active': idx === activeSlideIndex, 
                              'wcmc-thumbnail--dimmed': idx !== activeSlideIndex 
                            }" 
                            @click="goToSlide(idx)">
-                        <img class="w-100 h-100 wcmc-object-fit-cover" :src="img" :alt="`Thumbnail ${idx + 1}`" />
+                        <img v-if="!imageErrors[img]"
+                          class="w-100 h-100 wcmc-object-fit-cover" 
+                          :src="img" 
+                          :alt="`Thumbnail ${idx + 1}`"
+                          @error="handleImageError($event, img)"
+                          @load="handleImageLoad(img)" />
+                        <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21,15 16,10 5,21"/>
+                          </svg>
+                        </div>
                         <!-- Active Border/Overlay if needed, currently handled by class -->
                         <div v-if="idx === activeSlideIndex" class="position-absolute top-0 start-0 w-100 h-100 rounded"></div>
                       </div>
                   </div>
               </div>
           </div>
+        </div>
+        <!-- Placeholder when no images -->
+        <div v-else class="wcmc-fair-card__image--placeholder w-100 rounded overflow-hidden wcmc-carousel-height d-flex align-items-center justify-content-center">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21,15 16,10 5,21"/>
+          </svg>
         </div>
       </div>
 
@@ -711,65 +772,184 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
       <!-- Contact Information Card -->
       <div v-if="hasContactInfo" class="wcmc-detail-hero-card rounded p-4 mt-4">
-        <div class="col">
-          <!-- Logo/Icon -->
-          <div class="col-auto mb-3">
-            <div v-if="communityContactData?.logoUrl" class="wcmc-contact-logo-container rounded overflow-hidden wcmc-logo-container">
+        <!-- Desktop Layout -->
+        <div class="d-none d-xl-block">
+          <div class="row">
+            <!-- LEFT: Logo/Icon -->
+            <div class="col-lg-1">
+              <div v-if="communityContactData?.logoUrl" class="wcmc-contact-logo-container rounded overflow-hidden wcmc-logo-container">
+                <img :src="communityContactData.logoUrl" :alt="communityContactData.name || 'Logo'" class="wcmc-logo-img w-100 h-100" />
+              </div>
+              <div v-else class="wcmc-contact-logo-container rounded w-100 h-100 wcmc-logo-placeholder">
+                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="wcmc-logo-svg">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- RIGHT: Textual Information -->
+            <div class="col-lg-11">
+              <!-- Top Row: Community Information -->
+              <div v-if="communityContactData" class="row mb-4">
+                <div class="col-12 mb-3">
+                  <h3 class="text-uppercase fw-semibold mb-0 wcmc-contact-title">{{ communityContactData.name || t('communityName') }}</h3>
+                </div>
+                <div class="col-lg-3 mb-2 mb-lg-0">
+                  <div class="small">{{ communityContactData.address || "-" }}</div>
+                </div>
+                <div class="col-lg-3 mb-2 mb-lg-0">
+                  <div v-if="communityContactData.website" class="small">
+                    <a :href="communityContactData.website" target="_blank" class="wcmc-detail-link text-decoration-underline text-break">{{ communityContactData.website }}</a>
+                  </div>
+                  <div v-else class="small">-</div>
+                </div>
+                <div class="col-lg-3 mb-2 mb-lg-0">
+                  <div v-if="communityContactData.phone" class="small">
+                    <a :href="`tel:${communityContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ communityContactData.phone }}</a>
+                  </div>
+                  <div v-else class="small">-</div>
+                </div>
+                <div class="col-lg-3">
+                  <div v-if="communityContactData.pec" class="small">{{ communityContactData.pec }}</div>
+                  <div v-else class="small">-</div>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Referent Information -->
+              <div v-if="referentContactData" class="row">
+                <div class="col-12 mb-3">
+                  <h3 class="text-uppercase fw-semibold mb-0 wcmc-contact-title">{{ t('contactPerson') }}</h3>
+                </div>
+                <div class="col-lg-3 mb-2 mb-lg-0">
+                  <div class="small">{{ referentContactData.name || "-" }}</div>
+                </div>
+                <div class="col-lg-3 mb-2 mb-lg-0">
+                  <div v-if="referentContactData.phone" class="small">
+                    <a :href="`tel:${referentContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ referentContactData.phone }}</a>
+                  </div>
+                  <div v-else class="small">-</div>
+                </div>
+                <div class="col-lg-3 mb-2 mb-lg-0">
+                  <div v-if="referentContactData.email" class="small">
+                    <a :href="`mailto:${referentContactData.email}`" class="wcmc-detail-link text-decoration-underline text-break">{{ referentContactData.email }}</a>
+                  </div>
+                  <div v-else class="small">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile/Tablet Layout -->
+        <div class="d-xl-none">
+          <!-- Logo -->
+          <div class="mb-4">
+            <div v-if="communityContactData?.logoUrl" class="wcmc-contact-logo-container rounded overflow-hidden wcmc-logo-container" style="width: 80px; height: 80px;">
               <img :src="communityContactData.logoUrl" :alt="communityContactData.name || 'Logo'" class="wcmc-logo-img w-100 h-100" />
             </div>
-            <div v-else class="wcmc-contact-logo-container rounded w-100 h-100 wcmc-logo-placeholder">
+            <div v-else class="wcmc-contact-logo-container rounded wcmc-logo-placeholder" style="width: 80px; height: 80px;">
               <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="wcmc-logo-svg">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D" stroke-width="2" fill="none"/>
               </svg>
             </div>
           </div>
 
-          <!-- Content - Two Column Layout -->
-          <div class="col">
-            <div class="row g-4">
-              <!-- Left Column: Community Section -->
-              <div v-if="communityContactData" class="col-6">
-                <h3 class="text-uppercase fw-semibold mb-3 wcmc-contact-title">{{ communityContactData.name }}</h3>
-                <div class="d-flex flex-column gap-3">
-                  <div v-if="communityContactData.address">
-                    <div class="small">{{ communityContactData.address }}</div>
-                  </div>
-                  <div v-if="communityContactData.phone">
-                    <a :href="`tel:${communityContactData.phone}`" class="wcmc-detail-link text-decoration-underline small">{{ communityContactData.phone }}</a>
-                  </div>
-                  <div v-if="communityContactData.website">
-                    <a :href="communityContactData.website" target="_blank" class="wcmc-detail-link text-decoration-underline small text-break">{{ communityContactData.website }}</a>
-                  </div>
-                  <div v-if="communityContactData.email">
-                    <a :href="`mailto:${communityContactData.email}`" class="wcmc-detail-link text-decoration-underline small text-break">{{ communityContactData.email }}</a>
-                  </div>
-                </div>
+          <!-- Community Information -->
+          <div v-if="communityContactData" class="mb-4">
+            <h3 class="text-uppercase fw-semibold mb-3 wcmc-contact-title">{{ communityContactData.name || t('communityName') }}</h3>
+            <div class="d-flex flex-column gap-2">
+              <div v-if="communityContactData.address" class="small">
+                <span class="text-uppercase fw-semibold d-block mb-1">{{ t('address') }}</span>
+                <span>{{ communityContactData.address }}</span>
               </div>
-
-              <!-- Right Column: Referent Section -->
-              <div v-if="referentContactData" class="col-6">
-                <h3 class="text-uppercase fw-semibold mb-3 wcmc-contact-title">{{ t('contactPerson') }}</h3>
-                <div class="d-flex flex-column gap-3">
-                  <div v-if="referentContactData.name">
-                    <div class="small">{{ referentContactData.name }}</div>
-                  </div>
-                  <div v-if="referentContactData.phone">
-                    <a :href="`tel:${referentContactData.phone}`" class="wcmc-detail-link text-decoration-underline small">{{ referentContactData.phone }}</a>
-                  </div>
-                  <div v-if="referentContactData.email">
-                    <a :href="`mailto:${referentContactData.email}`" class="wcmc-detail-link text-decoration-underline small text-break">{{ referentContactData.email }}</a>
-                  </div>
-                  
-                  <button class="btn btn-primary" style="max-width: 10rem" @click="contactReferent">
-                    {{ t('contact') }}
-                  </button>
-                </div>
+              <div v-if="communityContactData.phone" class="small">
+                <span class="text-uppercase fw-semibold d-block mb-1">{{ t('phone') }}</span>
+                <a :href="`tel:${communityContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ communityContactData.phone }}</a>
+              </div>
+              <div v-if="communityContactData.website" class="small">
+                <span class="text-uppercase fw-semibold d-block mb-1">{{ t('website') }}</span>
+                <a :href="communityContactData.website" target="_blank" class="wcmc-detail-link text-decoration-underline text-break">{{ communityContactData.website }}</a>
+              </div>
+              <div v-if="communityContactData.pec" class="small">
+                <span class="text-uppercase fw-semibold d-block mb-1">PEC</span>
+                <span>{{ communityContactData.pec }}</span>
               </div>
             </div>
           </div>
+
+          <!-- Referent Information -->
+          <div v-if="referentContactData" class="mb-4">
+            <h3 class="text-uppercase fw-semibold mb-3 wcmc-contact-title">{{ t('contactPerson') }}</h3>
+            <div class="d-flex flex-column gap-2">
+              <div v-if="referentContactData.name" class="small">
+                <span class="text-uppercase fw-semibold d-block mb-1">{{ t('nameSurname') }}</span>
+                <span>{{ referentContactData.name }}</span>
+              </div>
+              <div v-if="referentContactData.phone" class="small">
+                <span class="text-uppercase fw-semibold d-block mb-1">{{ t('phone') }}</span>
+                <a :href="`tel:${referentContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ referentContactData.phone }}</a>
+              </div>
+              <div v-if="referentContactData.email" class="small">
+                <span class="text-uppercase fw-semibold d-block mb-1">{{ t('email') }}</span>
+                <a :href="`mailto:${referentContactData.email}`" class="wcmc-detail-link text-decoration-underline text-break">{{ referentContactData.email }}</a>
+              </div>
+            </div>
+          </div>
+
+          
         </div>
       </div>
 
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div v-if="lightboxOpen" class="wcmc-lightbox-modal" @click="closeLightbox" @keydown.esc="closeLightbox">
+      <div class="wcmc-lightbox-content" @click.stop>
+        <!-- Close Button -->
+        <button class="wcmc-lightbox-close" @click="closeLightbox" aria-label="Close lightbox">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- Previous Button -->
+        <button 
+          v-if="validCarouselImages.length > 1"
+          class="wcmc-lightbox-nav wcmc-lightbox-prev" 
+          @click.stop="prevLightboxImage"
+          aria-label="Previous image">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Image -->
+        <div class="wcmc-lightbox-image-wrapper">
+          <img 
+            v-if="currentLightboxImage"
+            :src="currentLightboxImage" 
+            :alt="`${item.title} - Image ${lightboxIndex + 1}`"
+            class="wcmc-lightbox-image"
+            @error="handleImageError($event, currentLightboxImage)" />
+        </div>
+
+        <!-- Next Button -->
+        <button 
+          v-if="validCarouselImages.length > 1"
+          class="wcmc-lightbox-nav wcmc-lightbox-next" 
+          @click.stop="nextLightboxImage"
+          aria-label="Next image">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Image Counter -->
+        <div v-if="validCarouselImages.length > 1" class="wcmc-lightbox-counter">
+          {{ lightboxIndex + 1 }} / {{ validCarouselImages.length }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -833,6 +1013,8 @@ const TRANSLATIONS = {
     fairs: 'Fairs',
     markets: 'Markets',
     detail: 'Detail',
+    search: 'Search...',
+    noResults: 'No results found',
   },
   it: {
     schedule: 'ORARI',
@@ -867,6 +1049,8 @@ const TRANSLATIONS = {
     fairs: 'Fiere',
     markets: 'Mercati',
     detail: 'Dettaglio',
+    search: 'Cerca...',
+    noResults: 'Nessun risultato trovato',
   },
   de: {
     schedule: 'ZEITPLAN',
@@ -901,6 +1085,8 @@ const TRANSLATIONS = {
     fairs: 'Messen',
     markets: 'Märkte',
     detail: 'Detail',
+    search: 'Suchen...',
+    noResults: 'Keine Ergebnisse gefunden',
   },
 };
 
@@ -939,11 +1125,11 @@ export default {
       exhibitorSearchQuery: '',
       exhibitorCategoryFilters: [], // Changed from string to array
       isCategoryDropdownOpen: false,
+      categorySearchQuery: '',
       exhibitorsPage: 1,
       exhibitorsPerPage: 10,
       exhibitorSortColumn: 'name',
       exhibitorSortDirection: 'asc',
-      styleObserver: null,
       detailItem: null,
       loadingDetail: false,
       detailError: null,
@@ -971,6 +1157,9 @@ export default {
       loadingDistrict: false,
       orderDarkSvg,
       orderLightSvg,
+      imageErrors: {}, // Track image errors by URL: { [url]: true }
+      lightboxOpen: false,
+      lightboxIndex: 0,
     };
   },
   computed: {
@@ -1058,7 +1247,9 @@ export default {
       return this.raw ? getOpeningHours(this.raw, this.lang) : null;
     },
     frequency() {
-      return this.raw ? getFrequency(this.raw, this.lang) : null;
+      if (!this.raw) return '—';
+      const freq = getFrequency(this.raw, this.lang);
+      return freq || '—';
     },
     fullAddress() {
       // Compose address from LocationInfo.TvInfo.Name and DistrictInfo.Name
@@ -1161,11 +1352,15 @@ export default {
 
       return images;
     },
+    validCarouselImages() {
+      // Filter out images that failed to load
+      return this.carouselImages.filter(img => !this.imageErrors[img]);
+    },
     mobileHeroBackgroundStyle() {
       // Use first carousel image as background for mobile hero
-      if (this.carouselImages.length > 0) {
+      if (this.validCarouselImages.length > 0) {
         return {
-          backgroundImage: `url(${this.carouselImages[0]})`,
+          backgroundImage: `url(${this.validCarouselImages[0]})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         };
@@ -1179,11 +1374,11 @@ export default {
       return 3; // Max thumbnails visible at once
     },
     totalThumbnailPages() {
-      return Math.ceil(this.carouselImages.length / this.thumbnailsPerPage);
+      return Math.ceil(this.validCarouselImages.length / this.thumbnailsPerPage);
     },
     visibleThumbnails() {
       const start = this.currentThumbnailPage * this.thumbnailsPerPage;
-      return this.carouselImages.slice(start, start + this.thumbnailsPerPage);
+      return this.validCarouselImages.slice(start, start + this.thumbnailsPerPage);
     },
     thumbnailPageDots() {
       return Array.from({ length: this.totalThumbnailPages }, (_, i) => i);
@@ -1310,6 +1505,15 @@ export default {
         if (ex.category) categories.add(ex.category);
       });
       return Array.from(categories).sort();
+    },
+    filteredExhibitorCategoriesForSearch() {
+      if (!this.categorySearchQuery.trim()) {
+        return this.availableExhibitorCategories;
+      }
+      const query = this.categorySearchQuery.trim().toLowerCase();
+      return this.availableExhibitorCategories.filter(cat => 
+        cat.toLowerCase().includes(query)
+      );
     },
     filteredExhibitors() {
       let filtered = this.exhibitors;
@@ -1515,6 +1719,45 @@ export default {
       }
       return fallback;
     },
+    currentLightboxImage() {
+      if (this.lightboxIndex >= 0 && this.lightboxIndex < this.validCarouselImages.length) {
+        return this.validCarouselImages[this.lightboxIndex];
+      }
+      return null;
+    },
+    mapIframeUrl() {
+      if (!this.mapCoords) return null;
+      
+      // Helper function to escape HTML attribute values
+      const escapeHtmlAttr = (str) => {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      };
+      
+      // Build the web component HTML with attributes
+      const categoryFilter = ['essen trinken', 'mobilität'].join(',');
+      const language = this.config.language || 'it';
+      const lat = String(this.mapCoords.lat);
+      const lon = String(this.mapCoords.lon);
+      const radius = '10000';
+      const zoom = String(this.fairsMapZoom || 15);
+      const markerColor = this.mapMarkerColor || '#024C96';
+      
+      // Build the web component tag as HTML string with properly escaped attributes
+      const componentHtml = `<odh-activity-poi category-filter="${escapeHtmlAttr(categoryFilter)}" directions="" language="${escapeHtmlAttr(language)}" lat="${escapeHtmlAttr(lat)}" lon="${escapeHtmlAttr(lon)}" radius="${escapeHtmlAttr(radius)}" show-current-location="true" showradius="false" zoom="${escapeHtmlAttr(zoom)}" marker-color="${escapeHtmlAttr(markerColor)}"></odh-activity-poi>\n`;
+      
+      // Base64 encode the HTML
+      const base64Attribs = btoa(unescape(encodeURIComponent(componentHtml)));
+      
+      // Build the iframe URL
+      const baseUrl = 'https://api.webcomponents.opendatahub.com/preview/0e5fbede-4a21-4dd3-bf85-7d2be71dfb12/latest';
+      return `${baseUrl}?attribs=${encodeURIComponent(base64Attribs)}`;
+    },
   },
   watch: {
     async id(newId, oldId) {
@@ -1542,24 +1785,19 @@ export default {
       },
     },
     scriptReady(newVal) {
-      if (newVal) {
-        this.$nextTick(() => {
-          this.applyTransparentStyles();
-          // Set up observer to apply styles when new elements are added
-          this.setupStyleObserver();
-        });
-      }
+      // Component handles its own styling now
     },
   },
   async mounted() {
+    // Add keyboard event listener for lightbox navigation
+    document.addEventListener('keydown', this.handleLightboxKeydown);
     await this.loadAllData();
   },
   beforeUnmount() {
-    // Clean up observer
-    if (this.styleObserver) {
-      this.styleObserver.disconnect();
-      this.styleObserver = null;
-    }
+    // Remove keyboard event listener
+    document.removeEventListener('keydown', this.handleLightboxKeydown);
+    // Clean up body overflow style
+    document.body.style.overflow = '';
     // Clean up carousel instance
     if (this.carouselInstance) {
       this.carouselInstance.dispose();
@@ -1578,10 +1816,24 @@ export default {
         desktopHero.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     },
+    handleImageError(event, imgUrl) {
+      // Hide the broken image element (same pattern as ItemCard)
+      if (event.target) {
+        event.target.style.display = 'none';
+      }
+      // Mark image as failed
+      this.imageErrors[imgUrl] = true;
+    },
+    handleImageLoad(imgUrl) {
+      // Remove error flag if image loads successfully
+      if (this.imageErrors[imgUrl]) {
+        delete this.imageErrors[imgUrl];
+      }
+    },
     initCarousel() {
       // Initialize Bootstrap carousel
       const carouselElement = this.$refs.heroCarousel;
-      if (carouselElement && this.carouselImages.length > 1) {
+      if (carouselElement && this.validCarouselImages.length > 1) {
         this.carouselInstance = new Carousel(carouselElement, {
           interval: false, // Disable auto-play
           wrap: true,      // Loop back to start
@@ -1707,95 +1959,9 @@ export default {
           src: 'https://cdn.webcomponents.opendatahub.com/dist/0e5fbede-4a21-4dd3-bf85-7d2be71dfb12/bundle.js',
         });
         this.scriptReady = true;
-
-        // Apply transparent styles to web component elements after it loads
-        this.$nextTick(() => {
-          this.applyTransparentStyles();
-          // Also try after a short delay in case elements load asynchronously
-          setTimeout(() => {
-            this.applyTransparentStyles();
-          }, 500);
-        });
       } catch (e) {
         this.embedError = e?.message || String(e);
       }
-    },
-    applyTransparentStyles() {
-      // Target all possible selectors for the web component's search elements
-      const selectors = [
-        'odh-activity-poi .mainContainer',
-        'search-items .mainContainer',
-        '.mainContainer.notShowingResults',
-        'odh-activity-poi .searchBox',
-        'search-items .searchBox',
-        'odh-activity-poi #searchContainer',
-        'search-items #searchContainer',
-        'odh-activity-poi input[type="search"]',
-        'search-items input[type="search"]',
-        '.searchBox input',
-        '#searchContainer input',
-      ];
-
-      selectors.forEach((selector) => {
-        try {
-          const elements = document.querySelectorAll(selector);
-          elements.forEach((el) => {
-            if (el) {
-              el.style.setProperty('background', 'transparent', 'important');
-              el.style.setProperty('border', 'none', 'important');
-              el.style.setProperty('box-shadow', 'none', 'important');
-              if (el.tagName === 'INPUT') {
-                el.style.setProperty('color', '#fff', 'important');
-                el.style.setProperty('outline', 'none', 'important');
-              }
-            }
-          });
-        } catch (e) {
-          // Ignore selector errors
-        }
-      });
-
-      // Also check inside the map container
-      const mapContainer = this.$el?.querySelector?.('.wcmc-detail-rect5-map');
-      if (mapContainer) {
-        selectors.forEach((selector) => {
-          try {
-            const elements = mapContainer.querySelectorAll(selector);
-            elements.forEach((el) => {
-              if (el) {
-                el.style.setProperty('background', 'transparent', 'important');
-                el.style.setProperty('border', 'none', 'important');
-                el.style.setProperty('box-shadow', 'none', 'important');
-                if (el.tagName === 'INPUT') {
-                  el.style.setProperty('color', '#fff', 'important');
-                  el.style.setProperty('outline', 'none', 'important');
-                }
-              }
-            });
-          } catch (e) {
-            // Ignore selector errors
-          }
-        });
-      }
-    },
-    setupStyleObserver() {
-      // Disconnect previous observer if exists
-      if (this.styleObserver) {
-        this.styleObserver.disconnect();
-      }
-
-      const mapContainer = this.$el?.querySelector?.('.wcmc-detail-rect5-map');
-      if (!mapContainer) return;
-
-      // Observe for new elements added to the map container
-      this.styleObserver = new MutationObserver(() => {
-        this.applyTransparentStyles();
-      });
-
-      this.styleObserver.observe(mapContainer, {
-        childList: true,
-        subtree: true,
-      });
     },
     navigateToLocation() {
       if (!this.mapCoords) return;
@@ -1883,6 +2049,10 @@ export default {
     },
     toggleCategoryDropdown() {
       this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+      // Clear search query when closing dropdown
+      if (!this.isCategoryDropdownOpen) {
+        this.categorySearchQuery = '';
+      }
     },
     toggleAllCategories(e) {
       if (e.target.checked) {
@@ -2000,6 +2170,7 @@ export default {
       this.nearbyFairs = [];
       this.currentThumbnailPage = 0;
       this.activeSlideIndex = 0;
+      this.imageErrors = {}; // Reset image errors when loading new data
       
       // First, try to fetch full detail from single-item endpoint
       await this.loadDetailData();
@@ -2030,12 +2201,54 @@ export default {
           });
         }
 
-        this.applyTransparentStyles();
       });
     },
     navigateToFair(fairId) {
       // Update the route which will trigger the watcher
       this.store.go('fairsDetail', { id: fairId });
+    },
+    openLightbox(index) {
+      if (index >= 0 && index < this.validCarouselImages.length) {
+        this.lightboxIndex = index;
+        this.lightboxOpen = true;
+        // Prevent body scroll when lightbox is open
+        document.body.style.overflow = 'hidden';
+        // Focus trap for accessibility
+        this.$nextTick(() => {
+          const closeBtn = this.$el?.querySelector('.wcmc-lightbox-close');
+          if (closeBtn) closeBtn.focus();
+        });
+      }
+    },
+    closeLightbox() {
+      this.lightboxOpen = false;
+      // Restore body scroll
+      document.body.style.overflow = '';
+    },
+    nextLightboxImage() {
+      if (this.validCarouselImages.length > 1) {
+        this.lightboxIndex = (this.lightboxIndex + 1) % this.validCarouselImages.length;
+      }
+    },
+    prevLightboxImage() {
+      if (this.validCarouselImages.length > 1) {
+        this.lightboxIndex = (this.lightboxIndex - 1 + this.validCarouselImages.length) % this.validCarouselImages.length;
+      }
+    },
+    handleLightboxKeydown(event) {
+      if (!this.lightboxOpen) return;
+      
+      switch (event.key) {
+        case 'Escape':
+          this.closeLightbox();
+          break;
+        case 'ArrowLeft':
+          this.prevLightboxImage();
+          break;
+        case 'ArrowRight':
+          this.nextLightboxImage();
+          break;
+      }
     },
   },
 };

@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   <div class="wcmc-map-view d-flex flex-column h-100 min-h-0 pb-3">
     <!-- Breadcrumb removed -->
 
-    <!-- Mobile: All controls in single row -->
+    <!-- Mobile: All controls -->
     <div class="d-md-none">
       <!-- Title + Filter Badge -->
       <div class="d-flex align-items-center justify-content-between mb-3">
@@ -25,40 +25,115 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </button>
       </div>
       
-      <!-- Single Row: Today + Date + Search -->
+      <!-- Preset buttons row -->
       <div class="d-flex gap-2 mb-3">
         <button
           type="button"
-          class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-shrink-0"
-          :class="{ 'active': filters.date === 'today' }"
-          @click="toggleTodayFilter"
+          class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === 'today' }"
+          @click="setPresetToday"
         >
           {{ t('today') }}
         </button>
-        
-        <div class="wcmc-date-selector-wrapper position-relative wcmc-flex-grow-min" @touchstart.prevent="handleDateTouchMobile">
+        <button
+          type="button"
+          class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === '7days' }"
+          @click="setPreset7Days"
+        >
+          {{ t('sevenDays') }}
+        </button>
+        <button
+          type="button"
+          class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === 'month' }"
+          @click="setPresetMonth"
+        >
+          {{ t('month') }}
+        </button>
+        <button
+          type="button"
+          class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === 'year' }"
+          @click="setPresetYear"
+        >
+          {{ t('year') }}
+        </button>
+      </div>
+      
+      <!-- Date range inputs row -->
+      <div class="d-flex gap-2 mb-3">
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-flex-grow-min" @touchstart.prevent="handleDateTouchMobileFrom">
           <input
-            id="wcmc-map-date-selector-mobile"
-            name="date-selector-mobile"
+            id="wcmc-date-selector-from-mobile-map"
+            name="date-selector-from-mobile"
             type="text"
             class="wcmc-date-selector wcmc-input-base wcmc-pointer-events-none form-control fst-italic w-100"
-            :placeholder="t('selectDate')"
-            :value="formattedDate"
+            :placeholder="t('selectStartDate')"
+            :value="formattedDateFrom"
             readonly
           />
           <input
             type="date"
             class="wcmc-date-input-overlay"
-            :value="selectedDate"
-            @change="onDateChange"
-            ref="dateInputMobile"
+            :value="dateRange.from"
+            @change="onDateFromChange"
+            ref="dateInputMobileFrom"
           />
           <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none;">
             <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
           </svg>
         </div>
         
-        <div class="wcmc-search-wrapper wcmc-flex-grow-min">
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-flex-grow-min" @touchstart.prevent="handleDateTouchMobileTo">
+          <input
+            id="wcmc-date-selector-to-mobile-map"
+            name="date-selector-to-mobile"
+            type="text"
+            class="wcmc-date-selector wcmc-input-base wcmc-pointer-events-none form-control fst-italic w-100"
+            :placeholder="t('selectEndDate')"
+            :value="formattedDateTo"
+            readonly
+          />
+          <input
+            type="date"
+            class="wcmc-date-input-overlay"
+            :value="dateRange.to"
+            @change="onDateToChange"
+            ref="dateInputMobileTo"
+          />
+          <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none;">
+            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Show past toggle + Reset button row -->
+      <div class="d-flex gap-2 mb-3 align-items-center">
+        <div class="d-flex align-items-center gap-2 flex-fill">
+          <label class="form-check form-switch mb-0">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              :checked="filters.showPast"
+              @change="filters.showPast = $event.target.checked"
+            />
+            <span class="form-check-label small">{{ t('showPast') }}</span>
+          </label>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary flex-fill"
+          @click="clearAllFilters"
+        >
+          {{ t('resetFilters') }}
+        </button>
+      </div>
+      
+      <!-- Search bar row -->
+      <div class="d-flex gap-2 mb-3">
+        <div class="wcmc-search-wrapper w-100">
           <div class="wcmc-search-box position-relative d-flex align-items-center">
             <input
               id="wcmc-map-search-input-mobile"
@@ -82,38 +157,62 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       <!-- Title -->
       <h2 class="wcmc-page-title">{{ t('map') }}</h2>
 
-      <!-- Header row: Quick filter + Date selector + Search -->
-      <div class="d-flex align-items-center gap-3">
-        <!-- Quick filter "Oggi" -->
+      <!-- Header row: Preset buttons + Date range + Show past + Search -->
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <!-- Preset buttons -->
         <button
           type="button"
           class="btn wcmc-quick-filter wcmc-quick-filter--green"
-          :class="{ 'active': filters.date === 'today' }"
-          @click="toggleTodayFilter"
+          :class="{ 'active': activePreset === 'today' }"
+          @click="setPresetToday"
         >
           {{ t('today') }}
         </button>
+        <button
+          type="button"
+          class="btn wcmc-quick-filter wcmc-quick-filter--green"
+          :class="{ 'active': activePreset === '7days' }"
+          @click="setPreset7Days"
+        >
+          {{ t('sevenDays') }}
+        </button>
+        <button
+          type="button"
+          class="btn wcmc-quick-filter wcmc-quick-filter--green"
+          :class="{ 'active': activePreset === 'month' }"
+          @click="setPresetMonth"
+        >
+          {{ t('month') }}
+        </button>
+        <button
+          type="button"
+          class="btn wcmc-quick-filter wcmc-quick-filter--green"
+          :class="{ 'active': activePreset === 'year' }"
+          @click="setPresetYear"
+        >
+          {{ t('year') }}
+        </button>
         
-        <!-- Date selector -->
-        <div class="wcmc-date-selector-wrapper position-relative wcmc-cursor-pointer" @click="openDatePicker">
+        <!-- Date range inputs -->
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-cursor-pointer" @click="openDatePickerFrom">
           <input
-            id="wcmc-date-selector-map"
-            name="date-selector"
+            id="wcmc-date-selector-from-map"
+            name="date-selector-from"
             type="text"
             class="wcmc-date-selector form-control fst-italic"
-            :placeholder="t('selectDate')"
-            :value="formattedDate"
+            :placeholder="t('selectStartDate')"
+            :value="formattedDateFrom"
             readonly
-            @click="openDatePicker"
-            ref="dateDisplay"
+            @click="openDatePickerFrom"
+            ref="dateDisplayFrom"
           />
           <input
             type="date"
             class="position-absolute top-0 start-0 w-100 h-100 opacity-0 wcmc-cursor-pointer"
             style="z-index: 10;"
-            :value="selectedDate"
-            @change="onDateChange"
-            ref="dateInput"
+            :value="dateRange.from"
+            @change="onDateFromChange"
+            ref="dateInputFrom"
             tabindex="-1"
           />
           <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none; z-index: 2;">
@@ -121,22 +220,71 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           </svg>
         </div>
         
-        <!-- Search box -->
-        <div class="wcmc-search-wrapper">
-          <div class="wcmc-search-box position-relative d-flex align-items-center">
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-cursor-pointer" @click="openDatePickerTo">
+          <input
+            id="wcmc-date-selector-to-map"
+            name="date-selector-to"
+            type="text"
+            class="wcmc-date-selector form-control fst-italic"
+            :placeholder="t('selectEndDate')"
+            :value="formattedDateTo"
+            readonly
+            @click="openDatePickerTo"
+            ref="dateDisplayTo"
+          />
+          <input
+            type="date"
+            class="position-absolute top-0 start-0 w-100 h-100 opacity-0 wcmc-cursor-pointer"
+            style="z-index: 10;"
+            :value="dateRange.to"
+            @change="onDateToChange"
+            ref="dateInputTo"
+            tabindex="-1"
+          />
+          <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none; z-index: 2;">
+            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+          </svg>
+        </div>
+        
+        <!-- Show past toggle -->
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-check form-switch mb-0">
             <input
-              id="wcmc-map-search-input"
-              name="search"
-              type="search"
-              class="wcmc-search-input form-control"
-              :placeholder="t('search')"
-              :value="query"
-              @input="query = $event.target.value"
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              :checked="filters.showPast"
+              @change="filters.showPast = $event.target.checked"
             />
-            <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="16" height="17" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
+            <span class="form-check-label small">{{ t('showPast') }}</span>
+          </label>
+        </div>
+        
+        <!-- Search box + Reset button -->
+        <div class="d-flex align-items-center gap-2">
+          <div class="wcmc-search-wrapper">
+            <div class="wcmc-search-box position-relative d-flex align-items-center">
+              <input
+                id="wcmc-map-search-input"
+                name="search"
+                type="search"
+                class="wcmc-search-input form-control"
+                :placeholder="t('search')"
+                :value="query"
+                @input="query = $event.target.value"
+              />
+              <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="16" height="17" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+            </div>
           </div>
+          <button
+            type="button"
+            class="btn btn-sm btn-primary wcmc-hide-above-1024"
+            @click="clearAllFilters"
+          >
+            {{ t('resetFilters') }}
+          </button>
         </div>
       </div>
     </div>
@@ -220,16 +368,32 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </div>
       </div>
       
-      <!-- Active filter tags -->
-      <div v-if="activeFilterTags.length > 0 || filters.date" class="wcmc-filter-tags d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
-        <span v-if="filters.date" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="filters.date = ''">
-          {{ filters.date === 'today' ? t('today') : formattedDate }}
-          <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
-        </span>
-        <span v-for="tag in activeFilterTags" :key="tag.type + tag.value" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="tag.type === 'typology' ? toggleTypology(tag.value) : tag.type === 'zone' ? toggleZone(tag.value) : toggleCategory(tag.value)">
-          {{ tag.label }}
-          <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
-        </span>
+      <!-- Active filter tags (Desktop) -->
+      <div v-if="activeFilterTags.length > 0 || dateRange.from || dateRange.to || filters.showPast" class="wcmc-filter-tags d-none d-md-flex flex-wrap gap-2 align-items-center justify-content-between mt-4 pt-4 border-top">
+        <div class="d-flex flex-wrap gap-2">
+          <span v-if="dateRange.from || dateRange.to" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="dateRange.from = ''; dateRange.to = ''; activePreset = null">
+            {{ formattedDateFrom }} - {{ formattedDateTo }}
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <span v-if="filters.showPast" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="filters.showPast = false">
+            {{ t('showPast') }}
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <span v-for="tag in activeFilterTags" :key="tag.type + tag.value" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="tag.type === 'typology' ? toggleTypology(tag.value) : tag.type === 'zone' ? toggleZone(tag.value) : toggleCategory(tag.value)">
+            {{ tag.label }}
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+        </div>
+        <button
+          type="button"
+          class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2"
+          @click="clearAllFilters"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          <span class="small">{{ t('resetFilters') }}</span>
+        </button>
       </div>
     </div>
 
@@ -240,7 +404,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div class="wcmc-mobile-filter-header d-flex align-items-center justify-content-between p-3 border-bottom">
           <div class="d-flex align-items-center gap-3">
             <h3 class="mb-0 fw-bold">{{ t('filters') }}</h3>
-            <button type="button" class="btn btn-link p-0 text-decoration-none" @click="clearAllFilters">
+            <button type="button" class="btn btn-link p-0 text-decoration-none" @click="clearMenuFilters">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
               </svg>
@@ -367,11 +531,18 @@ const TRANSLATIONS = {
     winter: 'Winter',
     summer: 'Summer',
     today: 'Today',
+    sevenDays: '7 Days',
+    month: 'Month',
+    year: 'Year',
+    selectStartDate: 'Select start date',
+    selectEndDate: 'Select end date',
+    showPast: 'Show past',
     selected: 'selected',
     selectDate: 'Select date',
     searchPlaceholderNew: 'Write something...',
     search: 'Search...',
     filters: 'Filters',
+    resetFilters: 'Reset filters',
     seeAll: 'See all',
     specificTypologies: 'Specific typologies',
     specificLocations: 'Specific locations',
@@ -399,11 +570,18 @@ const TRANSLATIONS = {
     winter: 'Invernale',
     summer: 'Estivo',
     today: 'Oggi',
+    sevenDays: '7 GG',
+    month: 'Mese',
+    year: 'Anno',
+    selectStartDate: 'Seleziona data inizio',
+    selectEndDate: 'Seleziona data fine',
+    showPast: 'Mostra passati',
     selected: 'selezionati',
     selectDate: 'Seleziona data',
     searchPlaceholderNew: 'Scrivi qualcosa...',
     search: 'Cerca...',
     filters: 'Filtri',
+    resetFilters: 'Reset filtri',
     seeAll: 'Vedi tutti',
     specificTypologies: 'Tipologie specifiche',
     specificLocations: 'Località specifiche',
@@ -431,11 +609,18 @@ const TRANSLATIONS = {
     winter: 'Winter',
     summer: 'Sommer',
     today: 'Heute',
+    sevenDays: '7 Tage',
+    month: 'Monat',
+    year: 'Jahr',
+    selectStartDate: 'Startdatum auswählen',
+    selectEndDate: 'Enddatum auswählen',
+    showPast: 'Vergangene anzeigen',
     selected: 'ausgewählt',
     selectDate: 'Datum auswählen',
     searchPlaceholderNew: 'Schreibe etwas...',
     search: 'Suchen...',
     filters: 'Filter',
+    resetFilters: 'Filter zurücksetzen',
     seeAll: 'Alle anzeigen',
     specificTypologies: 'Bestimmte Typologien',
     specificLocations: 'Bestimmte Orte',
@@ -464,14 +649,18 @@ export default {
     
     return {
       query: '',
-      selectedDate: '',
+      dateRange: {
+        from: '',
+        to: '',
+      },
+      activePreset: null, // 'today', '7days', 'month', 'year', or null
       filters: {
         typeMarkets: true,
         typeFairs: true,
-        date: '',
         zone: zoneDefault,
         typology: [],
         category: categoryDefault,
+        showPast: false, // Default OFF
       },
       dropdownOpen: {
         zone: false,
@@ -479,7 +668,7 @@ export default {
         category: false,
       },
       mobileFilterVisible: false,
-      minItems: Math.max(60, (this.config.pageSize || 20) * 3),
+      minItems: 999999, // Load all items for map view
     };
   },
   computed: {
@@ -492,16 +681,26 @@ export default {
     },
     activeFilterCount() {
       let count = 0;
-      if (this.filters.date && this.filters.date !== '') count++;
+      if (this.dateRange.from || this.dateRange.to) count++;
+      if (this.filters.showPast) count++;
       count += this.filters.typology.length;
       count += this.filters.zone.length;
       count += this.filters.category.length;
       return count;
     },
-    formattedDate() {
-      if (!this.selectedDate) return '';
+    formattedDateFrom() {
+      if (!this.dateRange.from) return '';
       // Format date as dd/mm/yyyy
-      const date = new Date(this.selectedDate);
+      const date = new Date(this.dateRange.from);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
+    formattedDateTo() {
+      if (!this.dateRange.to) return '';
+      // Format date as dd/mm/yyyy
+      const date = new Date(this.dateRange.to);
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
@@ -541,18 +740,8 @@ export default {
       return Array.from(zones).sort();
     },
     availableTypologies() {
-      const typs = new Set();
-      this.allNormalized.forEach((item) => {
-        const raw = item.raw;
-        const tags = raw?.ODHTags || raw?.Tags || [];
-        if (Array.isArray(tags)) {
-          tags.forEach((tag) => {
-            const name = tag?.Id || tag?.Name || tag;
-            if (typeof name === 'string' && name) typs.add(name);
-          });
-        }
-      });
-      return Array.from(typs).sort();
+      // Return markets and fairs as typology options
+      return [this.t('markets'), this.t('fairs')];
     },
     availableCategories() {
       const cats = new Set();
@@ -666,21 +855,42 @@ export default {
         result = result.filter((n) => String(n.title || '').toLowerCase().includes(q));
       }
 
-      // Date filter (today or specific date)
-      if (this.filters.date === 'today') {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Show past filter
+      if (!this.filters.showPast) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         result = result.filter((item) => {
           if (!item.nextDate) return false;
           const itemDate = new Date(item.nextDate);
-          return itemDate.toDateString() === today.toDateString();
+          itemDate.setHours(0, 0, 0, 0);
+          return itemDate >= today;
         });
-      } else if (this.filters.date === 'specific' && this.selectedDate) {
-        const selectedDateObj = new Date(this.selectedDate);
+      }
+
+      // Date range filter
+      if (this.dateRange.from || this.dateRange.to) {
+        const fromDate = this.dateRange.from ? new Date(this.dateRange.from) : null;
+        const toDate = this.dateRange.to ? new Date(this.dateRange.to) : null;
+        
+        if (fromDate) fromDate.setHours(0, 0, 0, 0);
+        if (toDate) {
+          toDate.setHours(23, 59, 59, 999);
+        }
+        
         result = result.filter((item) => {
           if (!item.nextDate) return false;
           const itemDate = new Date(item.nextDate);
-          return itemDate.toDateString() === selectedDateObj.toDateString();
+          itemDate.setHours(0, 0, 0, 0);
+          
+          if (fromDate && toDate) {
+            return itemDate >= fromDate && itemDate <= toDate;
+          } else if (fromDate) {
+            return itemDate >= fromDate;
+          } else if (toDate) {
+            return itemDate <= toDate;
+          }
+          
+          return true;
         });
       }
 
@@ -689,16 +899,17 @@ export default {
         result = result.filter((item) => this.filters.zone.includes(item.municipality));
       }
 
-      // Typology filter
+      // Typology filter (markets vs fairs)
       if (this.filters.typology.length > 0) {
         result = result.filter((item) => {
-          const raw = item.raw;
-          const tags = raw?.ODHTags || raw?.Tags || [];
-          if (Array.isArray(tags)) {
-            return tags.some((tag) => {
-              const name = tag?.Id || tag?.Name || tag;
-              return this.filters.typology.includes(String(name));
-            });
+          const marketsLabel = this.t('markets');
+          const fairsLabel = this.t('fairs');
+          
+          if (this.filters.typology.includes(marketsLabel) && item.type === 'market') {
+            return true;
+          }
+          if (this.filters.typology.includes(fairsLabel) && item.type === 'yearmarket') {
+            return true;
           }
           return false;
         });
@@ -729,18 +940,97 @@ export default {
         this.filters.zone = next;
       }
     },
-    toggleTodayFilter() {
-      if (this.filters.date === 'today') {
-        this.filters.date = '';
-        this.selectedDate = '';
-      } else {
-        // Set today's date
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        this.selectedDate = `${year}-${month}-${day}`;
-        this.filters.date = 'today';
+    formatDateForInput(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+    setPresetToday() {
+      const today = new Date();
+      const dateStr = this.formatDateForInput(today);
+      this.dateRange.from = dateStr;
+      this.dateRange.to = dateStr;
+      this.activePreset = 'today';
+    },
+    setPreset7Days() {
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 7);
+      this.dateRange.from = this.formatDateForInput(today);
+      this.dateRange.to = this.formatDateForInput(endDate);
+      this.activePreset = '7days';
+    },
+    setPresetMonth() {
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setMonth(endDate.getMonth() + 1);
+      this.dateRange.from = this.formatDateForInput(today);
+      this.dateRange.to = this.formatDateForInput(endDate);
+      this.activePreset = 'month';
+    },
+    setPresetYear() {
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setFullYear(endDate.getFullYear() + 1);
+      this.dateRange.from = this.formatDateForInput(today);
+      this.dateRange.to = this.formatDateForInput(endDate);
+      this.activePreset = 'year';
+    },
+    onDateFromChange(event) {
+      this.dateRange.from = event.target.value;
+      this.activePreset = null; // Clear preset when manually changed
+    },
+    onDateToChange(event) {
+      this.dateRange.to = event.target.value;
+      this.activePreset = null; // Clear preset when manually changed
+    },
+    openDatePickerFrom() {
+      if (this.$refs.dateInputFrom) {
+        this.$refs.dateInputFrom.showPicker?.();
+        if (!this.$refs.dateInputFrom.showPicker) {
+          this.$refs.dateInputFrom.focus();
+          this.$refs.dateInputFrom.click();
+        }
+      }
+    },
+    openDatePickerTo() {
+      if (this.$refs.dateInputTo) {
+        this.$refs.dateInputTo.showPicker?.();
+        if (!this.$refs.dateInputTo.showPicker) {
+          this.$refs.dateInputTo.focus();
+          this.$refs.dateInputTo.click();
+        }
+      }
+    },
+    handleDateTouchMobileFrom() {
+      const dateInput = this.$refs.dateInputMobileFrom;
+      if (dateInput) {
+        dateInput.focus();
+        if (dateInput.showPicker) {
+          try {
+            dateInput.showPicker();
+          } catch (e) {
+            dateInput.click();
+          }
+        } else {
+          dateInput.click();
+        }
+      }
+    },
+    handleDateTouchMobileTo() {
+      const dateInput = this.$refs.dateInputMobileTo;
+      if (dateInput) {
+        dateInput.focus();
+        if (dateInput.showPicker) {
+          try {
+            dateInput.showPicker();
+          } catch (e) {
+            dateInput.click();
+          }
+        } else {
+          dateInput.click();
+        }
       }
     },
     toggleDropdown(name) {
@@ -797,49 +1087,12 @@ export default {
         this.dropdownOpen.category = false;
       }
     },
-    openDatePicker() {
-      // Open the date picker by clicking on the input
-      if (this.$refs.dateInput) {
-        this.$refs.dateInput.showPicker?.();
-        // Fallback: focus and click if showPicker is not available 
-        if (!this.$refs.dateInput.showPicker) {
-          this.$refs.dateInput.focus();
-          this.$refs.dateInput.click();
-        }
-      }
-    },
-    handleDateTouchMobile() {
-      // Handle touch on mobile to open date picker
-      const dateInput = this.$refs.dateInputMobile;
-      if (dateInput) {
-        dateInput.focus();
-        // Try showPicker first (modern browsers)
-        if (dateInput.showPicker) {
-          try {
-            dateInput.showPicker();
-          } catch (e) {
-            // showPicker may fail, fallback to click
-            dateInput.click();
-          }
-        } else {
-          dateInput.click();
-        }
-      }
-    },
-    onDateChange(event) {
-      const dateValue = event.target.value;
-      this.selectedDate = dateValue;
-      if (dateValue) {
-        this.filters.date = 'specific';
-      } else {
-        this.filters.date = '';
-      }
-    },
     openDetails({ type, id }) {
       if (type === 'market') this.store.go('marketDetail', { id });
       else this.store.go('fairsDetail', { id });
     },
-    clearAllFilters() {
+    clearMenuFilters() {
+      // Reset only filters inside the menu (typology, zone, category)
       // Reset to default values from config
       const zoneDefault = this.config.filterZoneDefaultValue ? 
         (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue]) 
@@ -848,11 +1101,28 @@ export default {
         (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue]) 
         : [];
       
-      this.filters.date = '';
       this.filters.typology = [];
       this.filters.zone = zoneDefault;
       this.filters.category = categoryDefault;
-      this.selectedDate = '';
+    },
+    clearAllFilters() {
+      // Reset all filters including date range, showPast, and query
+      // Reset to default values from config
+      const zoneDefault = this.config.filterZoneDefaultValue ? 
+        (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue]) 
+        : [];
+      const categoryDefault = this.config.filterCategoryDefaultValue ? 
+        (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue]) 
+        : [];
+      
+      this.dateRange.from = '';
+      this.dateRange.to = '';
+      this.activePreset = null;
+      this.query = '';
+      this.filters.typology = [];
+      this.filters.zone = zoneDefault;
+      this.filters.category = categoryDefault;
+      this.filters.showPast = false;
     },
   },
 };

@@ -127,6 +127,7 @@ export default {
     initialZoom: { type: Number, default: 9 },
     lang: { type: String, default: 'it' },
     config: { type: Object, default: () => ({}) },
+    geoShape: { type: [Object, Array], default: null }, // GeoShape data with coordinates (single object or array of objects)
   },
   emits: ['openDetails'],
   data() {
@@ -134,6 +135,7 @@ export default {
       map: null,
       layerMarkets: null,
       layerFairs: null,
+      layerGeoShape: null,
       resizeObserver: null,
       didFitOnce: false,
       isZooming: false,
@@ -153,6 +155,7 @@ export default {
 
     this.layerMarkets = L.layerGroup().addTo(this.map);
     this.layerFairs = L.layerGroup().addTo(this.map);
+    this.layerGeoShape = L.layerGroup().addTo(this.map);
 
     // Close all popups during map operations to prevent errors
     const closeAllPopups = () => {
@@ -255,6 +258,7 @@ export default {
     this.resizeObserver.observe(el);
 
     this.renderMarkers();
+    this.renderGeoShape();
   },
   beforeUnmount() {
     try {
@@ -273,6 +277,7 @@ export default {
     fairs: { deep: true, handler() { this.renderMarkers(); } },
     showMarkets() { this.renderMarkers(); },
     showFairs() { this.renderMarkers(); },
+    geoShape: { deep: true, handler() { this.renderGeoShape(); } },
   },
   methods: {
     getConfigColor(cssVarName, fallback) {
@@ -460,14 +465,123 @@ export default {
                 }
               }, 100);
             }
-          } catch (e) {
-            // ignore errors
-            console.warn('Leaflet fitBounds error:', e);
-          }
+            } catch (e) {
+              // ignore errors
+            }
         });
       } else if (isUsingCustomView) {
         // Mark as done to prevent future fitBounds calls
         this.didFitOnce = true;
+      }
+    },
+    renderGeoShape() {
+      if (!this.map || !this.layerGeoShape) return;
+
+      // Clear existing geo shapes
+      this.layerGeoShape.clearLayers();
+
+      if (!this.geoShape || (Array.isArray(this.geoShape) && this.geoShape.length === 0)) {
+        return;
+      }
+
+      // Handle both single object and array of objects
+      const geoShapes = Array.isArray(this.geoShape) ? this.geoShape : [this.geoShape];
+      
+      if (geoShapes.length === 0) {
+        return;
+      }
+
+      const polygonColor = this.getConfigColor('--color-indicator-position-community-map', '#6c757d');
+      const allBounds = [];
+
+      try {
+        geoShapes.forEach((geoShape) => {
+          if (!geoShape || !geoShape.Geometry || !geoShape.Geometry.coordinates) {
+            return;
+          }
+
+          try {
+            // Extract coordinates from GeoShape
+            // Based on the data structure: Geometry.coordinates[0][0] contains array of [lon, lat] pairs
+            const coordinates = geoShape.Geometry.coordinates;
+            
+            let latLngs = [];
+            
+            if (Array.isArray(coordinates) && coordinates.length > 0) {
+              // Get the first ring (outer boundary)
+              const firstRing = coordinates[0];
+              
+              if (Array.isArray(firstRing) && firstRing.length > 0) {
+                // Check the structure: coordinates[0][0] should be an array of coordinate pairs
+                const secondLevel = firstRing[0];
+                
+                if (Array.isArray(secondLevel) && secondLevel.length > 0) {
+                  // Check if secondLevel[0] is a number (meaning secondLevel is [lon, lat])
+                  if (typeof secondLevel[0] === 'number' && typeof secondLevel[1] === 'number') {
+                    // Structure: coordinates[0] = [[lon, lat], [lon, lat], ...]
+                    latLngs = firstRing.map(coord => {
+                      // GeoJSON format is [lon, lat], Leaflet expects [lat, lon]
+                      return [coord[1], coord[0]];
+                    });
+                  } else if (Array.isArray(secondLevel[0]) && typeof secondLevel[0][0] === 'number') {
+                    // Structure: coordinates[0][0] = [[lon, lat], [lon, lat], ...]
+                    latLngs = secondLevel.map(coord => {
+                      // GeoJSON format is [lon, lat], Leaflet expects [lat, lon]
+                      return [coord[1], coord[0]];
+                    });
+                  }
+                }
+              }
+            }
+
+            if (latLngs.length === 0) {
+              return;
+            }
+
+            // Create polygon with styling
+            const polygon = L.polygon(latLngs, {
+              color: polygonColor,
+              fillColor: polygonColor,
+              fillOpacity: 0.2,
+              weight: 2,
+              opacity: 0.8,
+            });
+
+            polygon.addTo(this.layerGeoShape);
+            allBounds.push(polygon.getBounds());
+          } catch (e) {
+            // Ignore errors for individual polygons
+            console.warn('Error rendering geoshape polygon:', e);
+          }
+        });
+
+        // Fit bounds to all polygons combined (this will show all municipality areas)
+        if (allBounds.length > 0) {
+          this.$nextTick(() => {
+            try {
+              if (this.map && this.map.getContainer()) {
+                this.map.invalidateSize();
+                setTimeout(() => {
+                  if (this.map && allBounds.length > 0) {
+                    // Combine all bounds into a single bounds object
+                    let combinedBounds = allBounds[0];
+                    // Extend the first bounds with all other bounds
+                    for (let i = 1; i < allBounds.length; i++) {
+                      combinedBounds.extend(allBounds[i]);
+                    }
+                    
+                    this.map.fitBounds(combinedBounds, { padding: [24, 24] });
+                  }
+                }, 100);
+              }
+            } catch (e) {
+              // ignore errors
+            }
+          });
+        }
+      } catch (e) {
+        // ignore errors
+        console.warn('Error rendering geoshapes:', e);
       }
     },
   },

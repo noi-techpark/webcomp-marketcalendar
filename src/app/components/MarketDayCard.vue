@@ -38,11 +38,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <svg class="wcmc-market-day-card__location-icon flex-shrink-0 align-self-center" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
         </svg>
-        <h4 class="wcmc-market-day-card__title fw-bold text-uppercase mb-0" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;">{{ locationName }}</h4>
-      </div>
-
-      <div class="wcmc-market-day-card__meta d-flex align-items-center gap-2">
-        <span class="px-4">{{ regionName || '-' }}</span>
+        <h4 class="wcmc-market-day-card__title fw-bold text-uppercase mb-0" style="word-break: break-word;" :lang="lang">
+          <template v-for="(part, index) in formattedLocationName" :key="index">
+            <span v-if="index > 0" class="wcmc-title-separator">/</span>
+            <span class="wcmc-title-part">{{ part }}</span>
+          </template>
+        </h4>
       </div>
 
       <!-- Frequency with calendar icon -->
@@ -88,6 +89,11 @@ export default {
         ? this.item.municipality 
         : (this.item.title || '');
       return location.toUpperCase();
+    },
+    formattedLocationName() {
+      if (!this.locationName) return [];
+      // Split on "/" first
+      return this.locationName.split('/').map(part => part.trim()).filter(part => part.length > 0);
     },
     regionName() {
       return '';

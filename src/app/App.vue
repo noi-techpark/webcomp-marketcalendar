@@ -47,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <!-- Language selector -->
             <div v-if="languageVisible" ref="langSelectorMobile" class="wcmc-lang-selector position-relative" style="min-width: 88px;">
               <div
-                class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between"
+                class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center"
                 role="button"
                 style="border: none;"
                 tabindex="0"
@@ -56,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 @keydown.enter.prevent="toggleLangDropdown"
                 @keydown.space.prevent="toggleLangDropdown"
               >
-                <span class="flex-grow-1 text-start text-truncate me-2">{{ lang.toUpperCase() }}</span>
+                <span class="flex-grow-1 text-start text-truncate d-flex pe-3 justify-content-end">{{ lang.toUpperCase() }}</span>
                 <svg
                   class="wcmc-filter-chevron flex-shrink-0"
                   width="10"
@@ -96,112 +96,122 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       </div>
 
       <!-- Desktop Header Layout -->
-      <div class="d-none d-md-flex flex-column flex-md-row align-items-center justify-content-between">
-        <div class="wcmc-header__left d-flex align-items-center gap-4 justify-content-start">
-          <!-- Logo -->
-          <div class="wcmc-logo d-flex align-items-center">
-            <img 
-              :src="theme === 'light' ? logoDarkSvg : logoSvg" 
-              alt="Logo" 
-              class="wcmc-icon-40"
-            />
-          </div>
-          <!-- Title -->
-          <h1 class="wcmc-header__title mb-0">{{ currentTitle }}</h1>
-        </div>
-
-        <div v-if="navbarVisible" class="wcmc-header__center d-flex align-items-center justify-content-center">
-        <nav class="wcmc-nav d-flex align-items-center gap-4 flex-wrap justify-content-center">
-          <button
-            v-for="item in visibleMenuItems"
-            :key="item.key"
-            class="wcmc-nav__item d-flex align-items-center gap-2 p-2 rounded border-0 fw-medium"
-            :class="{ 'wcmc-nav__item--active': tab === item.key }"
-            type="button"
-            @click="setTab(item.key)"
-          >
-            <img 
-              :src="theme === 'light' ? item.iconLight : item.iconDark" 
-              :alt="t(item.label)" 
-              class="wcmc-nav__icon flex-shrink-0 d-block"
-            />
-            <span>{{ t(item.label) }}</span>
-          </button>
-        </nav>
-        </div>
-
-      <div class="wcmc-header__right d-flex align-items-center gap-3 justify-content-end">
-        <!-- Dark mode toggle -->
-        <!-- Theme Toggle Switch -->
-        <button
-          v-if="lightDarkVisible"
-          class="wcmc-theme-switch border-0 p-0 d-flex align-items-center"
-          type="button"
-          :aria-label="theme === 'dark' ? t('light') : t('dark')"
-          :data-theme="theme"
-          @click="toggleTheme"
-        >
-          <div class="wcmc-theme-switch__track d-flex align-items-center justify-content-between rounded-pill">
-            <span class="wcmc-theme-switch__icon wcmc-theme-switch__icon--sun d-flex align-items-center justify-content-center">
-              <svg width="14" height="15" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
-              </svg>
-            </span>
-            <span class="wcmc-theme-switch__icon wcmc-theme-switch__icon--moon d-flex align-items-center justify-content-center">
-              <svg width="14" height="15" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
-              </svg>
-            </span>
-            <div class="wcmc-theme-switch__knob position-absolute rounded-circle"></div>
-          </div>
-        </button>
-        <!-- Language selector -->
-        <div v-if="languageVisible" ref="langSelectorDesktop" class="wcmc-lang-selector position-relative" style="min-width: 88px;">
-          <div
-            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between"
-            role="button"
-            tabindex="0"
-            style="border: none;"
-            aria-label="Language"
-            @click.stop="toggleLangDropdown"
-            @keydown.enter.prevent="toggleLangDropdown"
-            @keydown.space.prevent="toggleLangDropdown"
-          >
-            <span class="flex-grow-1 text-start text-truncate">{{ lang.toUpperCase() }}</span>
-            <svg
-              class="wcmc-filter-chevron flex-shrink-0"
-              width="10"
-              height="6"
-              viewBox="0 0 10 6"
-              fill="none"
-              stroke="currentColor"
-              :style="{ transform: langDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }"
-            >
-              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+      <div class="d-none d-md-block">
+        <div class="row align-items-center g-0">
+          <!-- Left Column: Logo and Title -->
+          <div class="col-md-auto d-flex align-items-center gap-4 justify-content-start">
+            <div class="wcmc-header__left d-flex align-items-center gap-4">
+              <!-- Logo -->
+              <div class="wcmc-logo d-flex align-items-center">
+                <img 
+                  :src="theme === 'light' ? logoDarkSvg : logoSvg" 
+                  alt="Logo" 
+                  class="wcmc-icon-40"
+                />
+              </div>
+              <!-- Title -->
+              <h1 class="wcmc-header__title mb-0">{{ currentTitle }}</h1>
+            </div>
           </div>
 
-          <div
-            v-show="langDropdownOpen"
-            class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
-            @click.stop
-          >
-            <div
-              v-for="langCode in availableLanguages"
-              :key="langCode"
-              class="wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2"
-              :class="{
-                'wcmc-dropdown-item--selected': lang === langCode,
-                'wcmc-cursor-pointer': lang !== langCode,
-                'wcmc-dropdown-item--disabled': lang === langCode
-              }"
-              @click="lang !== langCode && setLanguage(langCode)"
-            >
-              <span class="small">{{ langCode.toUpperCase() }}</span>
+          <!-- Center Column: Navigation -->
+          <div v-if="navbarVisible" class="col-md d-flex align-items-center justify-content-center">
+            <div class="wcmc-header__center d-flex align-items-center justify-content-center">
+              <nav class="wcmc-nav d-flex align-items-center gap-4 flex-wrap justify-content-center">
+                <button
+                  v-for="item in visibleMenuItems"
+                  :key="item.key"
+                  class="wcmc-nav__item d-flex align-items-center gap-2 p-2 rounded border-0 fw-medium"
+                  :class="{ 'wcmc-nav__item--active': tab === item.key }"
+                  type="button"
+                  @click="setTab(item.key)"
+                >
+                  <img 
+                    :src="theme === 'light' ? item.iconLight : item.iconDark" 
+                    :alt="t(item.label)" 
+                    class="wcmc-nav__icon flex-shrink-0 d-block"
+                  />
+                  <span>{{ t(item.label) }}</span>
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          <!-- Right Column: Theme and Language Switches -->
+          <div class="col-md-auto d-flex align-items-center gap-3 justify-content-end">
+            <div class="wcmc-header__right d-flex align-items-center gap-3">
+              <!-- Theme Toggle Switch -->
+              <button
+                v-if="lightDarkVisible"
+                class="wcmc-theme-switch border-0 p-0 d-flex align-items-center"
+                type="button"
+                :aria-label="theme === 'dark' ? t('light') : t('dark')"
+                :data-theme="theme"
+                @click="toggleTheme"
+              >
+                <div class="wcmc-theme-switch__track d-flex align-items-center justify-content-between rounded-pill">
+                  <span class="wcmc-theme-switch__icon wcmc-theme-switch__icon--sun d-flex align-items-center justify-content-center">
+                    <svg width="14" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+                    </svg>
+                  </span>
+                  <span class="wcmc-theme-switch__icon wcmc-theme-switch__icon--moon d-flex align-items-center justify-content-center">
+                    <svg width="14" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+                    </svg>
+                  </span>
+                  <div class="wcmc-theme-switch__knob position-absolute rounded-circle"></div>
+                </div>
+              </button>
+              <!-- Language selector -->
+              <div v-if="languageVisible" ref="langSelectorDesktop" class="wcmc-lang-selector position-relative" style="min-width: 88px;">
+                <div
+                  class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center"
+                  role="button"
+                  tabindex="0"
+                  style="border: none;"
+                  aria-label="Language"
+                  @click.stop="toggleLangDropdown"
+                  @keydown.enter.prevent="toggleLangDropdown"
+                  @keydown.space.prevent="toggleLangDropdown"
+                >
+                  <span class="flex-grow-1 text-start text-truncate d-flex pe-3 justify-content-end">{{ lang.toUpperCase() }}</span>
+                  <svg
+                    class="wcmc-filter-chevron flex-shrink-0"
+                    width="10"
+                    height="6"
+                    viewBox="0 0 10 6"
+                    fill="none"
+                    stroke="currentColor"
+                    :style="{ transform: langDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }"
+                  >
+                    <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+
+                <div
+                  v-show="langDropdownOpen"
+                  class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
+                  @click.stop
+                >
+                  <div
+                    v-for="langCode in availableLanguages"
+                    :key="langCode"
+                    class="wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2"
+                    :class="{
+                      'wcmc-dropdown-item--selected': lang === langCode,
+                      'wcmc-cursor-pointer': lang !== langCode,
+                      'wcmc-dropdown-item--disabled': lang === langCode
+                    }"
+                    @click="lang !== langCode && setLanguage(langCode)"
+                  >
+                    <span class="small">{{ langCode.toUpperCase() }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </div>
     </header>
 

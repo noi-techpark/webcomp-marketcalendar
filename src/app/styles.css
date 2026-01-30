@@ -13,11 +13,14 @@ html,
 body {
   width: 100%;
   height: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
 }
 
 :host {
   display: block;
+  width: 100%;
+  min-height: 100vh;
 }
 
 .wcmc-root {
@@ -42,6 +45,8 @@ body {
   --primary-color: var(--primary-color-dark);
 
   box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
   font-family: system-ui,
     -apple-system,
     Segoe UI,
@@ -92,7 +97,9 @@ body {
 }
 
 .wcmc-root .wcmc-shell {
-  min-height: 200px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-shell {
@@ -104,7 +111,7 @@ body {
 }
 
 /* Add bottom padding on mobile to prevent footer from being hidden behind fixed navbar */
-@media (max-width: 767.98px) {
+@media (max-width: 1024px) {
   .wcmc-root .wcmc-shell {
     padding-bottom: 100px;
   }
@@ -130,6 +137,8 @@ body {
 
 .wcmc-root .wcmc-content {
   background: var(--background-color-dark, #000000);
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-content {
@@ -605,6 +614,28 @@ body {
   font-size: 0;
 }
 
+.wcmc-root .wcmc-pager-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  line-height: 1;
+  color: inherit;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.wcmc-root .wcmc-pager-skeleton {
+  pointer-events: none;
+  border: none;
+  background: transparent;
+}
+
+.wcmc-root .wcmc-pager-skeleton .placeholder {
+  border-radius: 0.375rem;
+}
+
 /* ========================================
    Page Title
    ======================================== */
@@ -748,8 +779,6 @@ body {
   position: relative;
   flex: 1;
   width: 100%;
-  max-width: 320px;
-  min-width: 200px;
   /* Ensure full "Seleziona data" text is visible */
   /* Use Bootstrap: d-flex align-items-center */
 }
@@ -969,8 +998,6 @@ body {
 .wcmc-root .wcmc-search-wrapper {
   flex: 1;
   width: 100%;
-  max-width: 320px;
-  min-width: 200px;
 }
 
 .wcmc-root .wcmc-search-box {
@@ -1072,6 +1099,34 @@ body {
 
 .wcmc-root[data-bs-theme="light"] .wcmc-filter-label {
   color: var(--text-color-light, #000000);
+}
+
+/* Form check label theme colors */
+.wcmc-root[data-bs-theme="dark"] .form-check-label {
+  color: var(--text-color-dark, #ffffff);
+}
+
+.wcmc-root[data-bs-theme="light"] .form-check-label {
+  color: var(--text-color-light, #000000);
+}
+
+/* Reset filters button theme colors */
+.wcmc-root[data-bs-theme="dark"] .btn-link {
+  color: var(--text-color-dark, #ffffff);
+}
+
+.wcmc-root[data-bs-theme="dark"] .btn-link:hover {
+  color: var(--text-color-dark, #ffffff);
+  opacity: 0.8;
+}
+
+.wcmc-root[data-bs-theme="light"] .btn-link {
+  color: var(--text-color-light, #000000);
+}
+
+.wcmc-root[data-bs-theme="light"] .btn-link:hover {
+  color: var(--text-color-light, #000000);
+  opacity: 0.8;
 }
 
 .wcmc-root .wcmc-filter-select {
@@ -1325,6 +1380,23 @@ body {
   min-height: 0.5em;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+}
+
+.wcmc-root .wcmc-title-part {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.wcmc-root .wcmc-title-separator {
+  flex-shrink: 0;
+  margin: 0 0.15em;
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-fair-card__title {
@@ -1432,11 +1504,6 @@ body {
   color: var(--text-color-dark, #ffffff);
   /* Use Bootstrap: fw-bold text-uppercase mb-0 */
   text-transform: uppercase;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   word-break: break-word;
 }
 
@@ -1579,8 +1646,8 @@ body {
   color: #888;
 }
 
-/* Hide market day card image on screens between 768px and 1500px (tablet/desktop), but show on mobile */
-@media (min-width: 768px) and (max-width: 1500px) {
+/* Hide market day card image on screens between 1025px and 1500px (desktop), but show on mobile/tablet */
+@media (min-width: 1025px) and (max-width: 1500px) {
   .wcmc-root .wcmc-market-day-card__image {
     display: none !important;
   }
@@ -1960,7 +2027,6 @@ body {
   left: 20px;
   z-index: 1000;
   width: auto;
-  min-width: 200px;
   max-width: 400px;
 }
 
@@ -2459,7 +2525,14 @@ body {
   flex: 0 0 calc(50% - 0.75rem);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 1024px) {
+  .wcmc-slider-card-item {
+    /* gap-4 is 1.5rem; for 3 cards there are 2 gaps -> (100% - 3rem) / 3 */
+    flex: 0 0 calc(33.333% - 1rem);
+  }
+}
+
+@media (min-width: 1025px) {
   .wcmc-slider-card-item {
     /* gap-4 is 1.5rem; for 4 cards there are 3 gaps -> (100% - 4.5rem) / 4 */
     flex: 0 0 calc(25% - 1.125rem);
@@ -3103,22 +3176,21 @@ body {
   /* Use Bootstrap: rounded overflow-hidden p-0 h-100 w-100 d-flex flex-column min-h-0 */
 }
 
-/* Mobile: set fixed height */
-@media (max-width: 991.98px) {
+/* Mobile/Tablet: set fixed height */
+@media (max-width: 1024px) {
   .wcmc-root .wcmc-community-detail__map-container {
-    height: 400px;
-    max-height: 400px;
+    min-height: 400px;
+    height: 100%;
   }
 }
 
 /* Su desktop, la mappa prende l'altezza dalle card e mantiene il quadrato */
-@media (min-width: 992px) {
+@media (min-width: 1025px) {
   .wcmc-root .col-lg-4 .wcmc-community-detail__map-container {
     height: 100%;
     aspect-ratio: 1;
     width: auto;
     max-width: 100%;
-    max-height: 560px;
     align-self: flex-start;
     margin: 0 auto;
   }
@@ -3142,8 +3214,8 @@ body {
   background: var(--background-color-dark, #000000);
 }
 
-/* Mobile: sidebar should be full width */
-@media (max-width: 767.98px) {
+/* Mobile/Tablet: sidebar should be full width */
+@media (max-width: 1024px) {
   .wcmc-root .wcmc-community-detail__sidebar {
     width: 100%;
   }
@@ -3247,23 +3319,24 @@ body {
   padding-left: 1em !important;
 }
 
-.wcmc-root .wcmc-community-detail__related-cards {
-  /* Use Bootstrap: d-flex flex-row gap-3 align-items-stretch flex-nowrap overflow-hidden pb-2 */
-  /*
-    Keep layout stable even when there are 0 items.
-    Without children, the flex row collapses to 0 height which makes the
-    "Related fairs/markets" rows much shorter than when at least one card exists.
+/* Desktop: keep layout stable even when there are 0 items */
+@media (min-width: 1025px) {
+  .wcmc-root .wcmc-community-detail__related-cards {
+    /* Use Bootstrap: d-flex flex-row gap-3 align-items-stretch flex-nowrap overflow-hidden pb-2 */
+    /*
+      Keep layout stable even when there are 0 items.
+      Without children, the flex row collapses to 0 height which makes the
+      "Related fairs/markets" rows much shorter than when at least one card exists.
 
-    These values approximate the rendered height of one `ItemCard` at each breakpoint:
-    - Desktop (card width ~185px)
-    - Tablet (card min-width ~240px)
-    - Small mobile (card min-width ~200px)
-  */
-  min-height: 252px;
+      These values approximate the rendered height of one `ItemCard` at each breakpoint:
+      - Desktop (card width ~185px)
+    */
+    min-height: 252px;
+  }
 }
 
 /* Desktop: scroll orizzontale con slider */
-@media (min-width: 992px) {
+@media (min-width: 1025px) {
   .wcmc-root .wcmc-community-detail__related-cards {
     overflow-x: auto;
     scrollbar-width: none;
@@ -3278,13 +3351,19 @@ body {
 }
 
 /* Tablet/Mobile: scroll orizzontale quando necessario */
-@media (max-width: 991px) {
+@media (max-width: 1024px) {
   .wcmc-root .wcmc-community-detail__related-cards {
     overflow-x: auto;
     scrollbar-width: thin;
     scrollbar-color: #D9D9D9 #171717;
     -ms-overflow-style: auto;
     scroll-snap-type: x mandatory;
+  }
+}
+
+/* Tablet only: apply min-height (not mobile) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .wcmc-root .wcmc-community-detail__related-cards {
     min-height: 290px;
   }
 
@@ -3313,9 +3392,17 @@ body {
   width: 185px;
 }
 
+/* Tablet only: apply min-height (not mobile) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .wcmc-root .wcmc-community-detail__related-cards {
+    min-height: 0px;
+  }
+}
+
+/* Mobile: remove forced height constraint - let content determine height */
 @media (max-width: 768px) {
   .wcmc-root .wcmc-community-detail__related-cards {
-    min-height: 262px;
+    min-height: 0 !important;
   }
 }
 
@@ -3325,15 +3412,8 @@ body {
 }
 
 /* Tablet/Mobile: larghezza minima per leggibilità */
-@media (max-width: 991px) {
+@media (max-width: 1024px) {
   .wcmc-root .wcmc-community-detail__related-card {
-    min-width: 240px;
-  }
-}
-
-@media (max-width: 768px) {
-  .wcmc-root .wcmc-community-detail__related-card {
-    min-width: 200px;
   }
 }
 
@@ -3814,7 +3894,7 @@ body {
 }
 
 .wcmc-map-container-height {
-  height: 600px !important;
+  height: 800px !important;
 }
 
 .wcmc-aspect-ratio-1 {
@@ -3919,8 +3999,6 @@ body {
 
 .wcmc-logo-container {
   aspect-ratio: 1 !important;
-  max-width: 60px !important;
-  max-height: 60px !important;
 }
 
 .wcmc-logo-img {
@@ -3988,4 +4066,264 @@ body {
 .wcmc-icon-20 {
   width: 20px !important;
   height: 20px !important;
+}
+
+/* ========================================
+   Force Mobile Layout on Tablets
+   ======================================== */
+/* Override Bootstrap responsive classes for tablets (768px - 1024px) to force mobile layout */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Force mobile visibility classes - allow d-flex to work when combined with d-md-none */
+  .d-md-none {
+    display: revert !important;
+  }
+  
+  /* Hide desktop-only elements */
+  .d-md-flex {
+    display: none !important;
+  }
+  
+  .d-md-block {
+    display: none !important;
+  }
+  
+  .d-md-inline {
+    display: none !important;
+  }
+  
+  .d-md-inline-block {
+    display: none !important;
+  }
+  
+  /* Force columns to full width (mobile behavior) */
+  .col-md-1,
+  .col-md-2,
+  .col-md-3,
+  .col-md-4,
+  .col-md-5,
+  .col-md-7,
+  .col-md-8,
+  .col-md-9,
+  .col-md-10,
+  .col-md-11,
+  .col-md-12 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Exception: Allow col-md-6 to show 2 columns on tablets (for CardGrid) */
+  .col-md-6 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+  
+  /* Force flex direction to column */
+  .flex-md-row {
+    flex-direction: column !important;
+  }
+  
+  .flex-md-column {
+    flex-direction: column !important;
+  }
+  
+  /* Force width to full on tablets */
+  .w-md-auto {
+    width: 100% !important;
+  }
+  
+  /* Override any tablet-specific spacing to mobile values */
+  .px-md-3,
+  .px-md-4,
+  .px-md-5 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .py-md-3,
+  .py-md-4,
+  .py-md-5 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  .mb-md-0,
+  .mb-md-1,
+  .mb-md-2,
+  .mb-md-3,
+  .mb-md-4,
+  .mb-md-5 {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Hide elements on screens larger than 1024px */
+@media (min-width: 1025px) {
+  .wcmc-hide-above-1024 {
+    display: none !important;
+  }
+}
+
+/* Lightbox Styles */
+.wcmc-root .wcmc-lightbox-trigger {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.wcmc-root .wcmc-lightbox-trigger:hover {
+  opacity: 0.9;
+}
+
+.wcmc-root .wcmc-lightbox-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wcmc-root .wcmc-lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.wcmc-root .wcmc-lightbox-image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.wcmc-root .wcmc-lightbox-image {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.wcmc-root .wcmc-lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  z-index: 10000;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.wcmc-root .wcmc-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.wcmc-root .wcmc-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  z-index: 10000;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.wcmc-root .wcmc-lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.wcmc-root .wcmc-lightbox-prev {
+  left: 1rem;
+}
+
+.wcmc-root .wcmc-lightbox-next {
+  right: 1rem;
+}
+
+.wcmc-root .wcmc-lightbox-counter {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  backdrop-filter: blur(10px);
+}
+
+/* Mobile adjustments for lightbox */
+@media (max-width: 768px) {
+  .wcmc-root .wcmc-lightbox-modal {
+    padding: 1rem;
+  }
+
+  .wcmc-root .wcmc-lightbox-nav {
+    width: 40px;
+    height: 40px;
+  }
+
+  .wcmc-root .wcmc-lightbox-prev {
+    left: 0.5rem;
+  }
+
+  .wcmc-root .wcmc-lightbox-next {
+    right: 0.5rem;
+  }
+
+  .wcmc-root .wcmc-lightbox-close {
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 36px;
+    height: 36px;
+  }
+
+  .wcmc-root .wcmc-lightbox-counter {
+    bottom: 0.5rem;
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
 }

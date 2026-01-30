@@ -31,9 +31,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
     <!-- Card content -->
     <div class="wcmc-fair-card__body d-flex flex-column gap-1 flex-fill min-h-0 px-2 pb-2">
-      <!-- Fair Name - Hidden for communityFair variant -->
-      <div v-if="item.title && variant !== 'communityFair'" class="wcmc-fair-card__title fw-bold mb-2 w-100" style="word-wrap: break-word; overflow-wrap: break-word;">
-        {{ item.title.toUpperCase() }}
+      <!-- Fair Name - Always show for communityFair variant, otherwise show when not communityFair -->
+      <div v-if="item.title" class="wcmc-fair-card__title fw-bold mb-2 w-100" :lang="lang">
+        <template v-for="(part, index) in formattedTitle" :key="index">
+          <span v-if="index > 0" class="wcmc-title-separator">/</span>
+          <span class="wcmc-title-part">{{ part }}</span>
+        </template>
       </div>
 
       <div v-if="item.nextDate" class="wcmc-fair-card__meta d-flex align-items-center gap-2 w-100">
@@ -152,6 +155,12 @@ export default {
     locationProvince() {
       // Add province code if available, otherwise default to (BZ)
       return ' (BZ)';
+    },
+    formattedTitle() {
+      if (!this.item.title) return [];
+      const title = this.item.title.toUpperCase();
+      // Split on "/" first
+      return title.split('/').map(part => part.trim()).filter(part => part.length > 0);
     },
   },
   data() {

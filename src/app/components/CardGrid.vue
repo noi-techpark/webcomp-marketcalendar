@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <template>
   <div class="row g-3">
-    <div v-for="item in items" :key="itemKey(item)" class="col-6 col-md-4 col-lg-3">
+    <div v-for="item in items" :key="itemKey(item)" class="col-6 col-md-6 col-lg-3">
       <slot name="card" :item="item" />
     </div>
   </div>

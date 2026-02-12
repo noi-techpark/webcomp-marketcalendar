@@ -112,7 +112,22 @@ const ATTR_TO_CONFIG = {
   'initial-view': 'initialView',
   'page-size': 'pageSize',
   'debug': 'debug',
+  // Support camelCase attributes (which get lowercased in HTML)
+  'titleitalian': 'titleItalian',
+  'titleenglish': 'titleEnglish',
+  'titlegerman': 'titleGerman',
+  'colorpresets': 'colorPresets',
+  'filterzonedefaultvalue': 'filterZoneDefaultValue',
+  'filtercategorydefaultvalue': 'filterCategoryDefaultValue',
+  'navbarvisibility': 'navbarVisibility',
+  'languagevisibility': 'languageVisibility',
+  'lightdarkvisibility': 'lightDarkVisibility',
+  'zoomfairsmarketsmap': 'fairsMapZoom',
+  'centermapsmaps': 'mapCenter',
+  'zoommapsmaps': 'mapZoom',
 };
+
+export const OBSERVED_ATTRIBUTES = Object.keys(ATTR_TO_CONFIG);
 
 /** Returns only config overrides for attributes that are actually set on the element. Use after defaultConfig() so attributes override defaults only when present. */
 export function configOverridesFromAttributes(el) {

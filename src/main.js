@@ -4,7 +4,7 @@
 
 import { createApp, reactive } from 'vue';
 import App from './app/App.vue';
-import { configOverridesFromAttributes, defaultConfig, getSystemTheme } from './app/config';
+import { configOverridesFromAttributes, defaultConfig, getSystemTheme, OBSERVED_ATTRIBUTES } from './app/config';
 
 // CSS is bundled into the JS and injected into Shadow DOM
 import bootstrapCss from 'bootstrap/dist/css/bootstrap.min.css';
@@ -42,13 +42,7 @@ const TAG_NAME = 'webcomp-market-calendar';
 
 class WebcompMarketCalendar extends HTMLElement {
   static get observedAttributes() {
-    return [
-      'title-italian', 'title-english', 'title-german', 'source', 'color-presets',
-      'language', 'filter-zone-default-value', 'filter-category-default-value',
-      'navbar-visibility', 'language-visibility', 'light-dark-visibility',
-      'zoom-fairs-markets-map', 'center-maps-maps', 'zoom-maps-maps', 'filter',
-      'theme', 'initial-view', 'page-size', 'debug',
-    ];
+    return OBSERVED_ATTRIBUTES;
   }
 
   constructor() {
@@ -201,7 +195,7 @@ class WebcompMarketCalendar extends HTMLElement {
     // Don't follow system theme if only one theme is available or if theme is explicitly set
     const availableThemes = this._config.availableThemes || ['light', 'dark'];
     const explicitTheme = this.getAttribute('theme');
-    
+
     // If only one theme is available, don't follow system changes
     if (availableThemes.length === 1 || explicitTheme) {
       this._teardownSystemThemeListener();
@@ -216,7 +210,7 @@ class WebcompMarketCalendar extends HTMLElement {
         // only apply if attribute still not set and multiple themes are available
         const currentAvailableThemes = this._config.availableThemes || ['light', 'dark'];
         if (this.getAttribute('theme') || currentAvailableThemes.length === 1) return;
-        
+
         const systemTheme = getSystemTheme();
         // Only apply system theme if it's in the available themes list
         if (currentAvailableThemes.includes(systemTheme)) {
@@ -225,7 +219,7 @@ class WebcompMarketCalendar extends HTMLElement {
         }
       };
       this._mediaQueryList.addEventListener('change', this._onSystemThemeChange);
-      
+
       // ensure current system theme is applied (only if it's available)
       const systemTheme = getSystemTheme();
       if (availableThemes.includes(systemTheme)) {

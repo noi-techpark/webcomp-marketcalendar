@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <template>
   <div class="wcmc-fair-card d-flex flex-column rounded overflow-hidden h-100" @click="$emit('details', item)" role="button" tabindex="0" @keydown.enter="$emit('details', item)">
     <!-- Image with category badge -->
-    <div class="wcmc-fair-card__image-wrapper position-relative p-2">
+    <div class="wcmc-fair-card__image-wrapper position-relative" :class="largePadding ? 'p-3' : 'p-2'">
       <img
         v-if="item.image && !imageError"
         class="wcmc-fair-card__image w-100 rounded d-block"
@@ -26,11 +26,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <polyline points="21,15 16,10 5,21"/>
         </svg>
       </div>
-      <span v-if="categoryLabel" class="wcmc-category-badge position-absolute top-0 end-0 m-3 px-1 py-1 rounded-1 fw-medium text-uppercase" style="top: 15px; right: 15px;">{{ categoryLabel }}</span>
+      <span v-if="categoryLabel" class="wcmc-category-badge position-absolute top-0 end-0 px-1 py-1 rounded-1 fw-medium text-uppercase" :class="largePadding ? 'm-4' : 'm-3'" style="top: 15px; right: 15px;">{{ categoryLabel }}</span>
     </div>
 
     <!-- Card content -->
-    <div class="wcmc-fair-card__body d-flex flex-column gap-1 flex-fill min-h-0 px-2 pb-2">
+    <div class="wcmc-fair-card__body d-flex flex-column gap-1 flex-fill min-h-0" :class="largePadding ? 'px-3 pb-3' : 'px-2 pb-2'">
       <!-- Fair Name - Always show for communityFair variant, otherwise show when not communityFair -->
       <div v-if="item.title" class="wcmc-fair-card__title fw-bold mb-2 w-100" :lang="lang">
         <template v-for="(part, index) in formattedTitle" :key="index">
@@ -47,7 +47,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       </div>
 
       <div v-if="item.nextDate" class="wcmc-fair-card__date ps-4 mb-1 w-100">
-        {{ formattedFullDate }}
+        {{ formattedFullDate }}{{ (formattedEndDate && formattedEndDate !== formattedFullDate) ? ` - ${formattedEndDate}` : '' }}
       </div>
 
       <!-- Location - Hidden for communityFair variant -->
@@ -83,6 +83,7 @@ export default {
     badge: { type: String, default: '' },
     lang: { type: String, default: 'it' },
     variant: { type: String, default: 'default' }, // 'default' or 'communityFair'
+    largePadding: { type: Boolean, default: false },
   },
   emits: ['details'],
   computed: {
@@ -136,18 +137,12 @@ export default {
     },
     formattedFullDate() {
       if (!this.item.nextDate) return '';
-      try {
-        const date = new Date(this.item.nextDate);
-        const lang = this.lang || 'it';
-        const weekdays = WEEKDAYS[lang] || WEEKDAYS.it;
-        const weekday = weekdays[date.getDay()];
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${weekday} ${day}/${month}/${year}`;
-      } catch {
-        return String(this.item.nextDate);
-      }
+      return this.formatDateForDisplay(this.item.nextDate);
+    },
+    formattedEndDate() {
+      const end = this.item.endDate || this.item.schedule?.[0]?.end || this.item.raw?.OperationSchedule?.[0]?.Stop;
+      if (!end) return '';
+      return this.formatDateForDisplay(end);
     },
     locationName() {
       return (this.item.municipality || '').toUpperCase() || '—';
@@ -169,6 +164,21 @@ export default {
     };
   },
   methods: {
+    formatDateForDisplay(dateInput) {
+      try {
+        const date = new Date(dateInput);
+        if (!Number.isFinite(date.getTime())) return '';
+        const lang = this.lang || 'it';
+        const weekdays = WEEKDAYS[lang] || WEEKDAYS.it;
+        const weekday = weekdays[date.getDay()];
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${weekday} ${day}/${month}/${year}`;
+      } catch {
+        return typeof dateInput === 'string' ? dateInput : '';
+      }
+    },
     handleImageError(event) {
       // Hide broken image and show placeholder instead
       this.imageError = true;

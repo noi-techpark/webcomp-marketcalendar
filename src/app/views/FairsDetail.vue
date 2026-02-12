@@ -752,6 +752,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <ItemCard 
                 :item="fair" 
                 :lang="config.language" 
+                :large-padding="true"
                 @details="(item) => navigateToFair(item.id)" 
               />
             </div>

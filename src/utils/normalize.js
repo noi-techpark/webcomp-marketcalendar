@@ -322,6 +322,89 @@ export function getNextDate(item) {
   return first ? first.toISOString() : null;
 }
 
+/**
+ * Parse date string (YYYY-MM-DD) or Date to Date at start of day; return null if invalid.
+ */
+function parseDateForRange(input) {
+  if (!input) return null;
+  const d = typeof input === 'string' ? new Date(input.trim()) : input;
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/**
+ * Check if a market/activity item overlaps the given date range (client-side date filter for markets).
+ * Used when not sending date rawfilter to the API (e.g. markets without OperationSchedule.Start/Stop).
+ * @param {object} item - Raw API item (with OperationSchedule, etc.)
+ * @param {{ dateFrom?: string|Date, dateTo?: string|Date, showPast?: boolean }} options
+ * @returns {boolean} true if the item should be included
+ */
+export function itemOverlapsDateRange(item, { dateFrom, dateTo, showPast } = {}) {
+  if (showPast === true) return true;
+
+  const from = parseDateForRange(dateFrom);
+  const to = parseDateForRange(dateTo);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const entries = getScheduleEntries(item);
+  const weekdays = getScheduleWeekdays(item);
+
+  // No date range set: filter to "today or future"
+  if (!from && !to) {
+    if (entries.length === 0) return true;
+    const next = getNextDate(item);
+    if (next) {
+      const nextDate = new Date(next);
+      nextDate.setHours(0, 0, 0, 0);
+      return nextDate.getTime() >= today.getTime();
+    }
+    // Recurring (e.g. weekdays only, full year): include
+    if (weekdays.length > 0) return true;
+    // Explicit past-only: exclude if every entry has ended before today
+    const allInPast = entries.length > 0 && entries.every((e) => {
+      const end = e.end ? new Date(e.end) : null;
+      if (!end) return false;
+      end.setHours(0, 0, 0, 0);
+      return end.getTime() < today.getTime();
+    });
+    return !allInPast;
+  }
+
+  // Range overlap: at least one day in [dateFrom, dateTo] (or single day) matches
+  const rangeStart = from || to;
+  const rangeEnd = to || from;
+  if (rangeStart.getTime() > rangeEnd.getTime()) return false;
+
+  // Has explicit schedule with start/end: overlap when any entry has start <= rangeEnd and (end >= rangeStart or no end)
+  if (entries.length > 0) {
+    const hasOverlap = entries.some((entry) => {
+      const start = entry.start ? new Date(entry.start) : null;
+      const end = entry.end ? new Date(entry.end) : null;
+      if (!start) return false;
+      start.setHours(0, 0, 0, 0);
+      if (end) end.setHours(0, 0, 0, 0);
+      const entryEnd = end || start;
+      return start.getTime() <= rangeEnd.getTime() && entryEnd.getTime() >= rangeStart.getTime();
+    });
+    if (hasOverlap) return true;
+  }
+
+  // Weekday-only (recurring): include if any day in [rangeStart, rangeEnd] has weekday in schedule
+  if (weekdays.length > 0) {
+    const check = new Date(rangeStart);
+    check.setHours(0, 0, 0, 0);
+    const endTime = rangeEnd.getTime();
+    while (check.getTime() <= endTime) {
+      if (weekdays.includes(check.getDay())) return true;
+      check.setDate(check.getDate() + 1);
+    }
+  }
+
+  return false;
+}
+
 function extractGpsFromExhibitor(ex) {
   // Try to extract GPS coordinates from various possible fields
   const lat = ex?.GpsInfo?.[0]?.Latitude || ex?.Latitude || ex?.GpsPoints?.position?.Latitude || null;

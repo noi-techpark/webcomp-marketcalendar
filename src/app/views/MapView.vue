@@ -117,6 +117,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               type="checkbox"
               role="switch"
               :checked="filters.showPast"
+              :disabled="markets.loading || fairs.loading"
               @change="filters.showPast = $event.target.checked"
             />
             <span class="form-check-label small">{{ t('showPast') }}</span>
@@ -254,6 +255,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               type="checkbox"
               role="switch"
               :checked="filters.showPast"
+              :disabled="markets.loading || fairs.loading"
               @change="filters.showPast = $event.target.checked"
             />
             <span class="form-check-label small">{{ t('showPast') }}</span>
@@ -310,9 +312,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.typology.length === 0" readonly>
               <span class="small">{{ t('allTypologies') }}</span>
             </div>
-            <div v-for="typ in availableTypologies" :key="typ" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleTypology(typ)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.typology.includes(typ)" readonly>
-              <span class="small">{{ typ }}</span>
+            <div v-for="typ in availableTypologies" :key="typ.value" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleTypology(typ.value)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.typology.includes(typ.value)" readonly>
+              <span class="small">{{ typ.label }}</span>
+              <span class="rounded-circle d-inline-block" :style="{ width: '10px', height: '10px', backgroundColor: typ.color}"></span>
             </div>
           </div>
         </div>
@@ -360,9 +363,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.length === 0" readonly>
               <span class="small">{{ t('allCategories') }}</span>
             </div>
-            <div v-for="cat in availableCategories" :key="cat" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleCategory(cat)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.includes(cat)" readonly>
-              <span class="small">{{ cat }}</span>
+            <div v-for="cat in availableCategories" :key="cat.Id" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleCategory(cat.Id)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.includes(cat.Id)" readonly>
+              <span class="small">{{ cat.Name }}</span>
             </div>
           </div>
         </div>
@@ -431,9 +434,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <label class="form-check-label" for="typologySpecific">{{ t('specificTypologies') }}</label>
             </div>
             <div v-if="filters.typology.length > 0 || true" class="ms-4 mt-2">
-              <div v-for="typ in availableTypologies" :key="typ" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'typ-'+typ" :checked="filters.typology.includes(typ)" @change="toggleTypology(typ)">
-                <label class="form-check-label" :for="'typ-'+typ">{{ typ }}</label>
+              <div v-for="typ in availableTypologies" :key="typ.value" class="form-check mb-2 d-flex align-items-center">
+                <input class="form-check-input" type="checkbox" :id="'typ-'+typ.value" :checked="filters.typology.includes(typ.value)" @change="toggleTypology(typ.value)">
+                <label class="form-check-label ms-2 flex-grow-1" :for="'typ-'+typ.value">{{ typ.label }}</label>
+                <span class="rounded-circle d-inline-block ms-2" :style="{ width: '8px', height: '8px', backgroundColor: typ.color }"></span>
               </div>
             </div>
           </div>
@@ -469,9 +473,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <label class="form-check-label" for="categorySpecific">{{ t('specificCategories') }}</label>
             </div>
             <div v-if="filters.category.length > 0 || true" class="ms-4 mt-2">
-              <div v-for="cat in availableCategories" :key="cat" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'cat-'+cat" :checked="filters.category.includes(cat)" @change="toggleCategory(cat)">
-                <label class="form-check-label" :for="'cat-'+cat">{{ cat }}</label>
+              <div v-for="cat in availableCategories" :key="cat.Id" class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" :id="'cat-'+cat.Id" :checked="filters.category.includes(cat.Id)" @change="toggleCategory(cat.Id)">
+                <label class="form-check-label" :for="'cat-'+cat.Id">{{ cat.Name }}</label>
               </div>
             </div>
           </div>
@@ -509,6 +513,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 import LeafletMap from '../components/LeafletMap.vue';
 import ErrorAlert from '../components/ErrorAlert.vue';
 import { normalizeOdhItem } from '../../utils/normalize';
+import { buildActivityPoiRawfilter } from '../../api/odhClient';
 
 const TRANSLATIONS = {
   en: {
@@ -677,7 +682,7 @@ export default {
       return this.config.filterVisibility === true || this.config.filterVisibility === undefined;
     },
     lang() {
-      return this.config.language || 'it';
+      return this.store.state.language || this.config.language || 'it';
     },
     activeFilterCount() {
       let count = 0;
@@ -706,6 +711,14 @@ export default {
       const year = date.getFullYear();
       return `${day}/${month}/${year}`;
     },
+    dateRawfilter() {
+      return buildActivityPoiRawfilter({
+        showPast: this.filters.showPast,
+        dateFrom: this.dateRange.from || undefined,
+        dateTo: this.dateRange.to || undefined,
+        categoryTagIds: this.filters.category && this.filters.category.length > 0 ? this.filters.category : undefined,
+      });
+    },
     markets() {
       return this.store.state.markets;
     },
@@ -713,49 +726,35 @@ export default {
       return this.store.state.fairs;
     },
     normalizedMarkets() {
-      return this.markets.itemsRaw.map((it) => normalizeOdhItem(it, { lang: this.config.language, type: 'market' }));
+      return this.markets.itemsRaw.map((it) => normalizeOdhItem(it, { lang: this.lang, type: 'market' }));
     },
     normalizedFairs() {
-      return this.fairs.itemsRaw.map((it) => normalizeOdhItem(it, { lang: this.config.language, type: 'yearmarket' }));
+      return this.fairs.itemsRaw.map((it) => normalizeOdhItem(it, { lang: this.lang, type: 'yearmarket' }));
     },
     allNormalized() {
       return [...this.normalizedMarkets, ...this.normalizedFairs];
     },
-    baseFilteredMarketsForZone() {
-      // Zone options should only show zones that would produce visible (mappable) results
-      return this.applyFilters(this.normalizedMarkets, { ignoreZone: true }).filter((n) => n.coords);
+    filterMetadataMunicipalities() {
+      return this.store.state.filterMetadata?.municipalities || [];
     },
-    baseFilteredFairsForZone() {
-      // Zone options should only show zones that would produce visible (mappable) results
-      return this.applyFilters(this.normalizedFairs, { ignoreZone: true }).filter((n) => n.coords);
-    },
-    allBaseForZone() {
-      return [...this.baseFilteredMarketsForZone, ...this.baseFilteredFairsForZone];
+    filterMetadataTags() {
+      return this.store.state.filterMetadata?.tags || [];
     },
     availableZones() {
-      const zones = new Set();
-      this.allBaseForZone.forEach((item) => {
-        if (item.municipality) zones.add(item.municipality);
-      });
-      return Array.from(zones).sort();
+      return this.filterMetadataMunicipalities
+        .map((m) => this.municipalityDisplayName(m))
+        .filter(Boolean)
+        .sort();
     },
     availableTypologies() {
-      // Return markets and fairs as typology options
-      return [this.t('markets'), this.t('fairs')];
+      // Return markets and fairs as typology options with colors
+      return [
+        { label: this.t('markets'), value: this.t('markets'), color: '#f29650' },
+        { label: this.t('fairs'), value: this.t('fairs'), color: '#1d4d96' },
+      ];
     },
     availableCategories() {
-      const cats = new Set();
-      this.allNormalized.forEach((item) => {
-        const raw = item.raw;
-        const tags = raw?.ODHTags || raw?.Tags || [];
-        if (Array.isArray(tags)) {
-          tags.forEach((tag) => {
-            const name = tag?.Id || tag?.Name || tag;
-            if (typeof name === 'string' && name) cats.add(name);
-          });
-        }
-      });
-      return Array.from(cats).sort();
+      return this.filterMetadataTags;
     },
     typologyDisplayText() {
       if (this.filters.typology.length === 0) return this.t('allTypologies');
@@ -769,7 +768,7 @@ export default {
     },
     categoryDisplayText() {
       if (this.filters.category.length === 0) return this.t('allCategories');
-      if (this.filters.category.length === 1) return this.filters.category[0];
+      if (this.filters.category.length === 1) return this.categoryDisplayName(this.filters.category[0]);
       return `${this.filters.category.length} ${this.t('selected')}`;
     },
     activeFilterTags() {
@@ -784,7 +783,7 @@ export default {
       });
       // Category
       this.filters.category.forEach(val => {
-        tags.push({ type: 'category', value: val, label: val });
+        tags.push({ type: 'category', value: val, label: this.categoryDisplayName(val) });
       });
       return tags;
     },
@@ -820,9 +819,19 @@ export default {
     },
   },
   async mounted() {
+    await this.store.ensureFilterMetadataLoaded();
+    const mapPageSize = 50;
     await Promise.all([
-      this.store.ensureLoaded('market', this.minItems),
-      this.store.ensureLoaded('yearmarket', this.minItems),
+      this.store.ensureLoaded('market', this.minItems, {
+        rawfilter: this.dateRawfilter,
+        pageSize: mapPageSize,
+        search: this.query?.trim() || undefined,
+      }),
+      this.store.ensureLoaded('yearmarket', this.minItems, {
+        rawfilter: this.dateRawfilter,
+        pageSize: mapPageSize,
+        search: this.query?.trim() || undefined,
+      }),
     ]);
     document.addEventListener('click', this.handleClickOutside);
   },
@@ -830,6 +839,22 @@ export default {
     document.removeEventListener('click', this.handleClickOutside);
   },
   watch: {
+    dateRawfilter() {
+      this.store.resetList('market');
+      this.store.resetList('yearmarket');
+      const mapPageSize = 50;
+      const search = this.query?.trim() || undefined;
+      this.store.ensureLoaded('market', this.minItems, { rawfilter: this.dateRawfilter, pageSize: mapPageSize, search });
+      this.store.ensureLoaded('yearmarket', this.minItems, { rawfilter: this.dateRawfilter, pageSize: mapPageSize, search });
+    },
+    query() {
+      this.store.resetList('market');
+      this.store.resetList('yearmarket');
+      const mapPageSize = 50;
+      const search = this.query?.trim() || undefined;
+      this.store.ensureLoaded('market', this.minItems, { rawfilter: this.dateRawfilter, pageSize: mapPageSize, search });
+      this.store.ensureLoaded('yearmarket', this.minItems, { rawfilter: this.dateRawfilter, pageSize: mapPageSize, search });
+    },
     availableZones: {
       immediate: true,
       handler() {
@@ -846,91 +871,43 @@ export default {
       const dict = TRANSLATIONS[this.lang] || TRANSLATIONS.it;
       return dict[key] || TRANSLATIONS.en[key] || key;
     },
-    applyFilters(items, { ignoreZone = false } = {}) {
+    applyFilters(items) {
       let result = items;
+      // Query and category are applied via API (search + rawfilter) for both market and yearmarket.
 
-      // Text search
-      const q = String(this.query || '').trim().toLowerCase();
-      if (q) {
-        result = result.filter((n) => String(n.title || '').toLowerCase().includes(q));
-      }
-
-      // Show past filter
-      if (!this.filters.showPast) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        result = result.filter((item) => {
-          if (!item.nextDate) return false;
-          const itemDate = new Date(item.nextDate);
-          itemDate.setHours(0, 0, 0, 0);
-          return itemDate >= today;
-        });
-      }
-
-      // Date range filter
-      if (this.dateRange.from || this.dateRange.to) {
-        const fromDate = this.dateRange.from ? new Date(this.dateRange.from) : null;
-        const toDate = this.dateRange.to ? new Date(this.dateRange.to) : null;
-        
-        if (fromDate) fromDate.setHours(0, 0, 0, 0);
-        if (toDate) {
-          toDate.setHours(23, 59, 59, 999);
-        }
-        
-        result = result.filter((item) => {
-          if (!item.nextDate) return false;
-          const itemDate = new Date(item.nextDate);
-          itemDate.setHours(0, 0, 0, 0);
-          
-          if (fromDate && toDate) {
-            return itemDate >= fromDate && itemDate <= toDate;
-          } else if (fromDate) {
-            return itemDate >= fromDate;
-          } else if (toDate) {
-            return itemDate <= toDate;
-          }
-          
-          return true;
-        });
-      }
-
-      // Zone filter
-      if (!ignoreZone && this.filters.zone.length > 0) {
+      // Zone / municipality filter (client-side)
+      if (this.filters.zone.length > 0) {
         result = result.filter((item) => this.filters.zone.includes(item.municipality));
       }
 
-      // Typology filter (markets vs fairs)
+      // Typology filter (markets vs fairs) – client-side
       if (this.filters.typology.length > 0) {
+        const marketsLabel = this.t('markets');
+        const fairsLabel = this.t('fairs');
         result = result.filter((item) => {
-          const marketsLabel = this.t('markets');
-          const fairsLabel = this.t('fairs');
-          
-          if (this.filters.typology.includes(marketsLabel) && item.type === 'market') {
-            return true;
-          }
-          if (this.filters.typology.includes(fairsLabel) && item.type === 'yearmarket') {
-            return true;
-          }
-          return false;
-        });
-      }
-
-      // Category filter
-      if (this.filters.category.length > 0) {
-        result = result.filter((item) => {
-          const raw = item.raw;
-          const tags = raw?.ODHTags || raw?.Tags || [];
-          if (Array.isArray(tags)) {
-            return tags.some((tag) => {
-              const name = tag?.Id || tag?.Name || tag;
-              return this.filters.category.includes(String(name));
-            });
-          }
+          if (this.filters.typology.includes(marketsLabel) && item.type === 'market') return true;
+          if (this.filters.typology.includes(fairsLabel) && item.type === 'yearmarket') return true;
           return false;
         });
       }
 
       return result;
+    },
+    municipalityDisplayName(m) {
+      const raw = m?.RawName ?? m?.Name;
+      if (!raw) return '';
+      if (typeof raw === 'string') return raw;
+      const language = this.lang || 'it';
+      let s = raw[language] || raw.en || raw.it || raw.de;
+      if (!s) {
+        const first = Object.values(raw).find((v) => typeof v === 'string' && String(v).trim());
+        s = first ? String(first).trim() : '';
+      }
+      return s || String(m?.Name || m?.Id || '');
+    },
+    categoryDisplayName(id) {
+      const tag = this.filterMetadataTags.find((t) => t.Id === id);
+      return tag?.Name || id;
     },
     pruneZoneSelection() {
       if (!Array.isArray(this.filters.zone) || this.filters.zone.length === 0) return;

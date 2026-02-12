@@ -11,11 +11,32 @@ import bootstrapCss from 'bootstrap/dist/css/bootstrap.min.css';
 import leafletCss from 'leaflet/dist/leaflet.css';
 import baseCss from './app/styles.css';
 import opendatahubPreset from '../config-presets/opendatahub.preset';
+import hdsPreset from '../config-presets/hds.preset';
 
 /** Preset name (from color-presets attribute) -> preset file content (KEY=value lines). */
 const PRESET_MAP = {
   OPENDATAHUB: opendatahubPreset,
+  HDS: hdsPreset,
 };
+
+/** Resolve logo path from preset (e.g. "src/app/logo/OpenDataHub_Logo_dark.svg") to require context key and return URL. */
+const logoContext = require.context('./app/logo', false, /\.svg$/);
+function resolveLogoUrl(presetPath) {
+  if (!presetPath || typeof presetPath !== 'string') return null;
+  const trimmed = presetPath.trim();
+  const filename = trimmed.split(/[/\\]/).pop();
+  if (!filename) return null;
+  try {
+    const mod = logoContext('./' + filename);
+    return mod?.default ?? mod ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Default logos when preset does not define LOGO_LIGHT / LOGO_DARK (light theme = dark logo, dark theme = light logo). */
+const defaultLogoLight = require('./app/logo/OpenDataHub_Logo_dark.svg');
+const defaultLogoDark = require('./app/logo/OpenDataHub_Logo_white.svg');
 
 const TAG_NAME = 'webcomp-market-calendar';
 
@@ -89,6 +110,9 @@ class WebcompMarketCalendar extends HTMLElement {
 
   /** Apply ASPECTS from the preset file selected by color-presets (e.g. OPENDATAHUB → config-presets/opendatahub.preset). */
   _applyConfigVariables() {
+    this._config.logoLight = this._config.logoLight || (defaultLogoLight?.default ?? defaultLogoLight);
+    this._config.logoDark = this._config.logoDark || (defaultLogoDark?.default ?? defaultLogoDark);
+
     const raw = this._config.colorPresets;
     const presetName = raw == null
       ? null
@@ -107,6 +131,17 @@ class WebcompMarketCalendar extends HTMLElement {
       const lineKey = parts[0].trim();
       const value = parts.slice(1).join('=').trim();
       if (!lineKey || !value) return;
+
+      if (lineKey === 'LOGO_LIGHT') {
+        const url = resolveLogoUrl(value);
+        if (url) this._config.logoLight = url;
+        return;
+      }
+      if (lineKey === 'LOGO_DARK') {
+        const url = resolveLogoUrl(value);
+        if (url) this._config.logoDark = url;
+        return;
+      }
 
       const cssVarName = '--' + lineKey.toLowerCase().replace(/_/g, '-');
       this._mountPoint.style.setProperty(cssVarName, value);

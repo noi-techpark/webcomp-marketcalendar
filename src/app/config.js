@@ -33,6 +33,8 @@ export function defaultConfig() {
     apiBase: apiBaseFromEnv || DEFAULT_API_BASE,
     pageSize: 20,
     debug: false,
+    logoLight: null,
+    logoDark: null,
   };
 }
 

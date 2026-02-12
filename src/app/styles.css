@@ -655,9 +655,16 @@ body {
   width: 36px;
   height: 36px;
   line-height: 1;
-  color: inherit;
   font-size: 1rem;
   user-select: none;
+}
+
+.wcmc-root[data-bs-theme="light"] .wcmc-pager-ellipsis {
+  color: var(--text-color-light, #000000);
+}
+
+.wcmc-root[data-bs-theme="dark"] .wcmc-pager-ellipsis {
+  color: var(--text-color-dark, #ffffff);
 }
 
 .wcmc-root .wcmc-pager-skeleton {
@@ -1342,13 +1349,13 @@ body {
    ======================================== */
 .wcmc-root .wcmc-fair-card {
   /* Use Bootstrap: d-flex flex-column rounded overflow-hidden h-100 border */
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   cursor: pointer;
   border: 1px solid var(--border-color-light, #565E64);
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-fair-card {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
   border-color: var(--border-color-light, #565E64);
 }
 
@@ -1505,7 +1512,7 @@ body {
    ======================================== */
 .wcmc-root .wcmc-market-day-card {
   /* Use Bootstrap: d-flex flex-row align-items-start gap-3 p-3 rounded mb-2 border */
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   cursor: pointer;
   transition: background 0.2s ease;
   border: 1px solid var(--border-color-dark, #565E64);
@@ -1588,7 +1595,7 @@ body {
 .wcmc-root .wcmc-market-day-column {
   border: 1px solid var(--border-color-dark, #565E64);
   /* Use Bootstrap: d-flex flex-column p-2 rounded */
-  background-color: var(--background-color-dark, #000000);
+  background-color: var(--card-background-color-dark, var(--background-color-dark, #000000));
 }
 
 .wcmc-root .wcmc-market-day-header {
@@ -1638,12 +1645,12 @@ body {
 
 /* Light mode styles for market day columns and cards - matching SVG design */
 .wcmc-root[data-bs-theme="light"] .wcmc-market-day-column {
-  background-color: var(--background-color-light, #ffffff);
+  background-color: var(--card-background-color-light, var(--background-color-light, #ffffff));
   border-color: var(--border-color-light, #565E64);
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-market-day-card {
-  background: var(--background-color-light, #f0f0f0);
+  background: var(--card-background-color-light, var(--background-color-light, #f0f0f0));
   border-color: var(--border-color-light, #565E64);
 }
 
@@ -1775,21 +1782,21 @@ body {
 
 /* Detail hero card - theme aware */
 .wcmc-root .wcmc-detail-hero-card {
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   color: var(--text-color-dark, #ffffff);
   border: 1px solid var(--border-color-dark, #565E64);
   /* Use Bootstrap: rounded-5 */
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-detail-hero-card {
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   color: var(--text-color-dark, #ffffff);
   border: 1px solid var(--border-color-dark, #565E64);
   /* Use Bootstrap: rounded-5 */
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-detail-hero-card {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
   color: var(--text-color-light, #000000);
   border: 1px solid var(--border-color-light, #565E64);
   /* Use Bootstrap: rounded-5 */
@@ -1839,12 +1846,12 @@ body {
 
 /* Mobile Map Section */
 .wcmc-root .wcmc-detail-mobile-map {
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   border: 1px solid var(--border-color-dark, #565E64);
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-detail-mobile-map {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
   border: 1px solid var(--border-color-light, #565E64);
 }
 
@@ -2123,13 +2130,13 @@ body {
   min-height: 739px;
   margin: 0 auto;
   padding: 0;
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   border-radius: 6px;
   overflow: hidden;
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-detail-rectangle-15 {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
 }
 
 /* Common section styles */
@@ -2395,13 +2402,13 @@ body {
 
 /* Exhibitors Table */
 .wcmc-root .wcmc-detail-exhibitors-section {
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   border: 1px solid var(--border-color-dark, #565E64);
   padding: 1.5rem;
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-detail-exhibitors-section {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
   border: 1px solid var(--border-color-light, #565E64);
 }
 
@@ -2490,11 +2497,11 @@ body {
 /* Related Fairs Section */
 .wcmc-related-fairs-section {
   /* Use Bootstrap: mt-5 p-4 rounded */
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-related-fairs-section {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
 }
 
 /* Tabs */
@@ -2613,7 +2620,7 @@ body {
   /* Use Bootstrap: flex-shrink-0 d-flex flex-column rounded overflow-hidden */
   /* Custom flex: 0 0 calc(25% - 1.125rem) - keep in CSS or use style */
   min-width: 0;
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   color: var(--text-color-dark, #ffffff);
@@ -2623,13 +2630,13 @@ body {
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-detail-slider-card {
   /* Use Bootstrap: rounded-5 */
-  background: var(--background-color-dark, #ffffff);
+  background: var(--card-background-color-dark, var(--background-color-dark, #ffffff));
   color: var(--text-color-dark, #000000);
   border: 1px solid var(--border-color-light, #565E64);
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-detail-slider-card {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
   color: var(--text-color-light, #000000);
   border: 1px solid var(--border-color-light, #565E64);
   /* Use Bootstrap: rounded-5 */
@@ -2720,7 +2727,7 @@ body {
 .wcmc-root .wcmc-map-popup-card {
   /* Use Bootstrap: d-flex flex-row w-100 rounded overflow-hidden */
   /* Custom min/max-width: 280px-500px - keep in CSS or use style */
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   color: var(--text-color-dark, #ffffff);
   font-family: Inter, system-ui, sans-serif;
 }
@@ -2740,7 +2747,7 @@ body {
 
 .wcmc-root .wcmc-map-popup-card__image-placeholder {
   /* Use Bootstrap: w-100 h-100 d-flex align-items-center justify-content-center rounded */
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   color: rgba(255, 255, 255, 0.3);
 }
 
@@ -2800,7 +2807,28 @@ body {
 }
 
 .wcmc-root .leaflet-popup-tip {
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
+}
+
+.wcmc-root[data-bs-theme="light"] .wcmc-map-popup-card {
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
+  color: var(--text-color-light, #000000);
+}
+
+.wcmc-root[data-bs-theme="light"] .wcmc-map-popup-card__image-placeholder {
+  background: var(--card-background-color-light, var(--background-color-light, #f0f0f0));
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.wcmc-root[data-bs-theme="light"] .leaflet-popup-tip {
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
+}
+
+.wcmc-root[data-bs-theme="light"] .wcmc-map-popup-card__title,
+.wcmc-root[data-bs-theme="light"] .wcmc-map-popup-card__meta,
+.wcmc-root[data-bs-theme="light"] .wcmc-map-popup-card__icon,
+.wcmc-root[data-bs-theme="light"] .wcmc-map-popup-card__months {
+  color: var(--text-color-light, #000000);
 }
 
 /* ========================================
@@ -2816,7 +2844,7 @@ body {
 
 .wcmc-root .wcmc-community-card {
   /* Use Bootstrap: row g-0 align-items-center px-* py-* rounded */
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   cursor: pointer;
   transition: background-color 0.2s;
   min-height: 79px;
@@ -2939,7 +2967,7 @@ body {
 
 /* Light mode styles for community card */
 .wcmc-root[data-bs-theme="light"] .wcmc-community-card {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
   border: 1px solid var(--border-color-light, #565E64);
 }
 
@@ -3241,11 +3269,11 @@ body {
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-community-detail__sidebar {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-community-detail__sidebar {
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
 }
 
 /* Mobile/Tablet: sidebar should be full width */
@@ -3256,7 +3284,7 @@ body {
 }
 
 .wcmc-root .wcmc-community-detail__referent {
-  background: var(--background-color-dark, #000000);
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   border: 1px solid var(--border-color-light, #565E64) !important;
   /* Use Bootstrap: rounded p-4 d-flex flex-column gap-3 */
 }
@@ -3317,7 +3345,7 @@ body {
 
 /* Light mode styles for referent */
 .wcmc-root[data-bs-theme="light"] .wcmc-community-detail__referent {
-  background: var(--background-color-light, #ffffff);
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-community-detail__referent-title {
@@ -3447,8 +3475,7 @@ body {
 
 /* Tablet/Mobile: larghezza minima per leggibilità */
 @media (max-width: 1024px) {
-  .wcmc-root .wcmc-community-detail__related-card {
-  }
+  .wcmc-root .wcmc-community-detail__related-card {}
 }
 
 .wcmc-root .wcmc-community-detail__related-card {
@@ -3512,7 +3539,7 @@ body {
 }
 
 .wcmc-root .wcmc-community-detail__header-name-logo-info {
-  background-color: var(--background-color-dark, #000000);
+  background-color: var(--card-background-color-dark, var(--background-color-dark, #000000));
   border: 1px solid var(--border-color-light, #565E64);
   /* Use Bootstrap: rounded p-4 d-flex flex-row gap-3 align-items-stretch flex-fill */
 }
@@ -3523,7 +3550,7 @@ body {
 
 /* Light mode styles for community detail header */
 .wcmc-root[data-bs-theme="light"] .wcmc-community-detail__header-name-logo-info {
-  background-color: var(--background-color-light, #ffffff);
+  background-color: var(--card-background-color-light, var(--background-color-light, #ffffff));
 }
 
 .wcmc-root[data-bs-theme="light"] .wcmc-community-detail__title {
@@ -3576,12 +3603,18 @@ body {
   opacity: 1;
 }
 
+.wcmc-root .wcmc-community-list-row {
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
+}
+
 .wcmc-root[data-bs-theme="light"] .wcmc-community-list-row {
+  background: var(--card-background-color-light, var(--background-color-light, #ffffff));
   border: 1px solid var(--border-color-light, #565E64);
   color: var(--text-color-light, #000000);
 }
 
 .wcmc-root[data-bs-theme="dark"] .wcmc-community-list-row {
+  background: var(--card-background-color-dark, var(--background-color-dark, #000000));
   border: 1px solid var(--border-color-light, #565E64);
   color: var(--text-color-dark, #ffffff);
 }
@@ -4107,28 +4140,29 @@ body {
    ======================================== */
 /* Override Bootstrap responsive classes for tablets (768px - 1024px) to force mobile layout */
 @media (min-width: 768px) and (max-width: 1024px) {
+
   /* Force mobile visibility classes - allow d-flex to work when combined with d-md-none */
   .d-md-none {
     display: revert !important;
   }
-  
+
   /* Hide desktop-only elements */
   .d-md-flex {
     display: none !important;
   }
-  
+
   .d-md-block {
     display: none !important;
   }
-  
+
   .d-md-inline {
     display: none !important;
   }
-  
+
   .d-md-inline-block {
     display: none !important;
   }
-  
+
   /* Force columns to full width (mobile behavior) */
   .col-md-1,
   .col-md-2,
@@ -4144,27 +4178,27 @@ body {
     flex: 0 0 100% !important;
     max-width: 100% !important;
   }
-  
+
   /* Exception: Allow col-md-6 to show 2 columns on tablets (for CardGrid) */
   .col-md-6 {
     flex: 0 0 50% !important;
     max-width: 50% !important;
   }
-  
+
   /* Force flex direction to column */
   .flex-md-row {
     flex-direction: column !important;
   }
-  
+
   .flex-md-column {
     flex-direction: column !important;
   }
-  
+
   /* Force width to full on tablets */
   .w-md-auto {
     width: 100% !important;
   }
-  
+
   /* Override any tablet-specific spacing to mobile values */
   .px-md-3,
   .px-md-4,
@@ -4172,14 +4206,14 @@ body {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }
-  
+
   .py-md-3,
   .py-md-4,
   .py-md-5 {
     padding-top: 1rem !important;
     padding-bottom: 1rem !important;
   }
-  
+
   .mb-md-0,
   .mb-md-1,
   .mb-md-2,
@@ -4226,6 +4260,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

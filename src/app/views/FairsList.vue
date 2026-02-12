@@ -130,6 +130,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               type="checkbox"
               role="switch"
               :checked="filters.showPast"
+              :disabled="ds.loading"
               @change="filters.showPast = $event.target.checked"
             />
             <span class="form-check-label small">{{ t('showPast') }}</span>
@@ -269,6 +270,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               type="checkbox"
               role="switch"
               :checked="filters.showPast"
+              :disabled="ds.loading"
               @change="filters.showPast = $event.target.checked"
             />
             <span class="form-check-label small">{{ t('showPast') }}</span>
@@ -325,8 +327,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.weekday.length === 0" readonly>
               <span class="small">{{ t('allDays') }}</span>
             </div>
-            <div v-for="dayOption in filteredWeekdayOptions" :key="dayOption.idx" :class="['wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2', validWeekdays.has(dayOption.idx) ? 'wcmc-cursor-pointer' : 'wcmc-dropdown-item--disabled']" @click="validWeekdays.has(dayOption.idx) && toggleWeekday(dayOption.idx)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.weekday.includes(dayOption.idx)" :disabled="!validWeekdays.has(dayOption.idx)" readonly>
+            <div v-for="dayOption in filteredWeekdayOptions" :key="dayOption.idx" class="wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2 wcmc-cursor-pointer" @click="toggleWeekday(dayOption.idx)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.weekday.includes(dayOption.idx)" readonly>
               <span class="small">{{ dayOption.label }}</span>
             </div>
           </div>
@@ -361,8 +363,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.zone.length === 0" readonly>
               <span class="small">{{ t('allLocations') }}</span>
             </div>
-            <div v-for="zone in filteredZonesForSearch" :key="zone" :class="['wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2', validZones.has(zone) ? 'wcmc-cursor-pointer' : 'wcmc-dropdown-item--disabled']" @click="validZones.has(zone) && toggleZone(zone)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.zone.includes(zone)" :disabled="!validZones.has(zone)" readonly>
+            <div v-for="zone in filteredZonesForSearch" :key="zone" class="wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2 wcmc-cursor-pointer" @click="toggleZone(zone)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.zone.includes(zone)" readonly>
               <span class="small">{{ zone }}</span>
             </div>
             <div v-if="filteredZonesForSearch.length === 0 && zoneSearchQuery.trim()" class="text-muted text-center p-2 small">
@@ -400,9 +402,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.length === 0" readonly>
               <span class="small">{{ t('allCategories') }}</span>
             </div>
-            <div v-for="cat in filteredCategoriesForSearch" :key="cat" :class="['wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2', validCategories.has(cat) ? 'wcmc-cursor-pointer' : 'wcmc-dropdown-item--disabled']" @click="validCategories.has(cat) && toggleCategory(cat)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.includes(cat)" :disabled="!validCategories.has(cat)" readonly>
-              <span class="small">{{ cat }}</span>
+            <div v-for="cat in filteredCategoriesForSearch" :key="cat.Id" class="wcmc-dropdown-item p-2 rounded mb-1 d-flex align-items-center gap-2 wcmc-cursor-pointer" @click="toggleCategory(cat.Id)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.includes(cat.Id)" readonly>
+              <span class="small">{{ cat.Name }}</span>
             </div>
             <div v-if="filteredCategoriesForSearch.length === 0 && categorySearchQuery.trim()" class="text-muted text-center p-2 small">
               {{ t('noResults') }}
@@ -430,8 +432,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             {{ z }}
             <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
           </span>
-          <span v-for="(c, i) in filters.category" :key="'c'+i" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="toggleCategory(c)">
-            {{ c }}
+          <span v-for="(id, i) in filters.category" :key="'c'+i" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="toggleCategory(id)">
+            {{ categoryDisplayName(id) }}
             <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
           </span>
         </div>
@@ -486,8 +488,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </div>
             <div v-if="filters.weekday.length > 0 || true" class="ms-4 mt-2">
               <div v-for="dayOption in filteredWeekdayOptions" :key="dayOption.idx" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'weekday-'+dayOption.idx" :checked="filters.weekday.includes(dayOption.idx)" :disabled="!validWeekdays.has(dayOption.idx)" @change="validWeekdays.has(dayOption.idx) && toggleWeekday(dayOption.idx)">
-                <label :class="['form-check-label', !validWeekdays.has(dayOption.idx) && 'text-muted']" :for="'weekday-'+dayOption.idx">{{ dayOption.label }}</label>
+                <input class="form-check-input" type="checkbox" :id="'weekday-'+dayOption.idx" :checked="filters.weekday.includes(dayOption.idx)" @change="toggleWeekday(dayOption.idx)">
+                <label class="form-check-label" :for="'weekday-'+dayOption.idx">{{ dayOption.label }}</label>
               </div>
             </div>
           </div>
@@ -515,8 +517,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 />
               </div>
               <div v-for="zone in filteredZonesForSearch" :key="zone" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'zone-'+zone" :checked="filters.zone.includes(zone)" :disabled="!validZones.has(zone)" @change="validZones.has(zone) && toggleZone(zone)">
-                <label :class="['form-check-label', !validZones.has(zone) && 'text-muted']" :for="'zone-'+zone">{{ zone }}</label>
+                <input class="form-check-input" type="checkbox" :id="'zone-'+zone" :checked="filters.zone.includes(zone)" @change="toggleZone(zone)">
+                <label class="form-check-label" :for="'zone-'+zone">{{ zone }}</label>
               </div>
               <div v-if="filteredZonesForSearch.length === 0 && zoneSearchQuery.trim()" class="text-muted text-center p-2 small">
                 {{ t('noResults') || 'No results found' }}
@@ -546,9 +548,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                   @input="categorySearchQuery = $event.target.value"
                 />
               </div>
-              <div v-for="cat in filteredCategoriesForSearch" :key="cat" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'cat-'+cat" :checked="filters.category.includes(cat)" :disabled="!validCategories.has(cat)" @change="validCategories.has(cat) && toggleCategory(cat)">
-                <label :class="['form-check-label', !validCategories.has(cat) && 'text-muted']" :for="'cat-'+cat">{{ cat }}</label>
+              <div v-for="cat in filteredCategoriesForSearch" :key="cat.Id" class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" :id="'cat-'+cat.Id" :checked="filters.category.includes(cat.Id)" @change="toggleCategory(cat.Id)">
+                <label class="form-check-label" :for="'cat-'+cat.Id">{{ cat.Name }}</label>
               </div>
               <div v-if="filteredCategoriesForSearch.length === 0 && categorySearchQuery.trim()" class="text-muted text-center p-2 small">
                 {{ t('noResults') || 'No results found' }}
@@ -563,11 +565,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
     <SkeletonList v-if="ds.loading && normalized.length === 0" :count="8" />
 
-    <EmptyState v-else-if="!ds.loading && normalized.length > 0 && filtered.length === 0" :lang="config.language" />
+    <EmptyState v-else-if="!ds.loading && normalized.length > 0 && filtered.length === 0" :lang="lang" />
 
     <CardGrid v-else-if="filtered.length > 0" :items="visible">
       <template #card="{ item }">
-        <ItemCard :item="item" :lang="config.language" @details="openDetails" />
+        <ItemCard :item="item" :lang="lang" @details="openDetails" />
       </template>
     </CardGrid>
 
@@ -587,6 +589,7 @@ import Pagination from '../components/Pagination.vue';
 
 
 import { normalizeOdhItem } from '../../utils/normalize';
+import { buildActivityPoiRawfilter } from '../../api/odhClient';
 
 const TRANSLATIONS = {
   en: {
@@ -743,7 +746,7 @@ export default {
       return this.config.filterVisibility !== false; // Default to true if not set
     },
     lang() {
-      return this.config.language || 'it';
+      return this.store.state.language || this.config.language || 'it';
     },
     activeFilterCount() {
       let count = 0;
@@ -778,6 +781,28 @@ export default {
     pageSize() {
       return this.config.pageSize || 8;
     },
+    dateRawfilter() {
+      return buildActivityPoiRawfilter({
+        showPast: this.filters.showPast,
+        dateFrom: this.dateRange.from || undefined,
+        dateTo: this.dateRange.to || undefined,
+        categoryTagIds: this.filters.category && this.filters.category.length > 0 ? this.filters.category : undefined,
+        weekdays: this.filters.weekday && this.filters.weekday.length > 0 ? this.filters.weekday : undefined,
+      });
+    },
+    locfilter() {
+      if (!this.filters.zone || this.filters.zone.length === 0) return null;
+      const ids = this.filters.zone.map(name => {
+         const m = this.filterMetadataMunicipalities.find(m => this.municipalityDisplayName(m) === name);
+         return m ? m.Id : null;
+      }).filter(id => id);
+      if (ids.length === 0) return null;
+      return ids.map(id => `mun${id}`).join(',');
+    },
+    odhtagfilter() {
+      if (!this.filters.category || this.filters.category.length === 0) return null;
+      return this.filters.category.join(',');
+    },
     page: {
       get() {
         return this.store.state.ui.fairs.page || 1;
@@ -790,19 +815,8 @@ export default {
       return WEEKDAYS[this.lang] || WEEKDAYS.it;
     },
     filteredWeekdayOptions() {
-      // Only show weekdays that have actual data when no filters are active
+      // Always show all weekdays (server-side filtering; no restriction to "valid" from current page)
       const options = this.weekdayOptions;
-      if (this.filters.weekday.length === 0 && 
-          this.filters.zone.length === 0 && 
-          this.filters.category.length === 0 && 
-          !this.dateRange.from && !this.dateRange.to && 
-          !this.query.trim()) {
-        // Return array of { label, index } for weekdays that have data
-        return options
-          .map((label, idx) => ({ label, idx }))
-          .filter(item => this.validWeekdays.has(item.idx));
-      }
-      // Return all options with their indices when filters are active
       return options.map((label, idx) => ({ label, idx }));
     },
     weekdayDisplayText() {
@@ -819,7 +833,7 @@ export default {
     },
     categoryDisplayText() {
       if (this.filters.category.length === 0) return this.t('allCategories');
-      if (this.filters.category.length === 1) return this.filters.category[0];
+      if (this.filters.category.length === 1) return this.categoryDisplayName(this.filters.category[0]);
       return `${this.filters.category.length} ${this.t('selected')}`;
     },
     normalized() {
@@ -827,116 +841,52 @@ export default {
         return [];
       }
       return this.ds.itemsRaw.map((it) =>
-        normalizeOdhItem(it, { lang: this.config.language, type: 'yearmarket' })
+        normalizeOdhItem(it, { lang: this.lang, type: 'yearmarket' })
       );
     },
     baseForZone() {
-      return this.applyFilters(this.normalized, { ignoreZone: true });
+      return this.applyFilters(this.normalized);
+    },
+    filterMetadataMunicipalities() {
+      return this.store.state.filterMetadata?.municipalities || [];
+    },
+    filterMetadataTags() {
+      return this.store.state.filterMetadata?.tags || [];
     },
     availableZones() {
-      // Only show zones that have actual data (use validZones when no filters are active)
-      if (this.filters.zone.length === 0 && 
-          this.filters.weekday.length === 0 && 
-          this.filters.category.length === 0 && 
-          !this.dateRange.from && !this.dateRange.to && 
-          !this.query.trim()) {
-        return Array.from(this.validZones).sort();
-      }
-      const zones = new Set();
-      this.baseForZone.forEach((item) => {
-        if (item.municipality) zones.add(item.municipality);
-      });
-      return Array.from(zones).sort();
+      return this.filterMetadataMunicipalities
+        .map((m) => this.municipalityDisplayName(m))
+        .filter(Boolean)
+        .sort();
     },
     filteredZonesForSearch() {
-      if (!this.zoneSearchQuery.trim()) {
-        return this.availableZones;
-      }
-      const query = this.zoneSearchQuery.trim().toLowerCase();
-      return this.availableZones.filter(zone => 
-        zone.toLowerCase().includes(query)
-      );
-    },
-    filteredCategoriesForSearch() {
-      if (!this.categorySearchQuery.trim()) {
-        return this.availableCategories;
-      }
-      const query = this.categorySearchQuery.trim().toLowerCase();
-      return this.availableCategories.filter(cat => 
-        cat.toLowerCase().includes(query)
-      );
+      if (!this.zoneSearchQuery.trim()) return this.availableZones;
+      const q = this.zoneSearchQuery.trim().toLowerCase();
+      return this.availableZones.filter((z) => z.toLowerCase().includes(q));
     },
     availableCategories() {
-      // Only show categories that have actual data (use validCategories when no filters are active)
-      if (this.filters.category.length === 0 && 
-          this.filters.zone.length === 0 && 
-          this.filters.weekday.length === 0 && 
-          !this.dateRange.from && !this.dateRange.to && 
-          !this.query.trim()) {
-        return Array.from(this.validCategories).sort();
-      }
-      const cats = new Set();
-      this.normalized.forEach((item) => {
-        const raw = item.raw;
-        const tags = raw?.ODHTags || raw?.Tags || [];
-        if (Array.isArray(tags)) {
-          tags.forEach((tag) => {
-            const name = tag?.Id || tag?.Name || tag;
-            if (typeof name === 'string' && name) cats.add(name);
-          });
-        }
-      });
-      return Array.from(cats).sort();
+      return this.filterMetadataTags;
+    },
+    filteredCategoriesForSearch() {
+      if (!this.categorySearchQuery.trim()) return this.availableCategories;
+      const q = this.categorySearchQuery.trim().toLowerCase();
+      return this.availableCategories.filter((cat) =>
+        String(cat?.Name || '').toLowerCase().includes(q)
+      );
     },
     // Computed properties for valid filter options based on current selections
     validWeekdays() {
-      // Get items that match current filters (excluding weekday filter)
-      const baseItems = this.applyFilters(this.normalized, { ignoreWeekday: true });
-      const validDays = new Set();
-      
-      baseItems.forEach((item) => {
-        if (!item.nextDate) return;
-        try {
-          const itemDate = new Date(item.nextDate);
-          validDays.add(itemDate.getDay());
-        } catch {
-          // Invalid date, skip
-        }
-      });
-      
-      return validDays;
+      // Always return all weekdays as valid since we can't easily determine validity from server-side filtered data
+      return new Set([0, 1, 2, 3, 4, 5, 6]);
     },
     validZones() {
-      // Get items that match current filters (excluding zone filter)
-      const baseItems = this.applyFilters(this.normalized, { ignoreZone: true });
-      const validZones = new Set();
-      
-      baseItems.forEach((item) => {
-        if (item.municipality) validZones.add(item.municipality);
-      });
-      
-      return validZones;
+      return new Set(this.availableZones);
     },
     validCategories() {
-      // Get items that match current filters (excluding category filter)
-      const baseItems = this.applyFilters(this.normalized, { ignoreCategory: true });
-      const validCats = new Set();
-      
-      baseItems.forEach((item) => {
-        const raw = item.raw;
-        const tags = raw?.ODHTags || raw?.Tags || [];
-        if (Array.isArray(tags)) {
-          tags.forEach((tag) => {
-            const name = tag?.Id || tag?.Name || tag;
-            if (typeof name === 'string' && name) validCats.add(name);
-          });
-        }
-      });
-      
-      return validCats;
+      return new Set(this.filterMetadataTags.map((t) => t.Id));
     },
     hasActiveFilters() {
-      return (this.dateRange.from || this.dateRange.to) || this.filters.showPast || this.filters.weekday.length > 0 || this.filters.zone.length > 0 || this.filters.category.length > 0;
+      return (this.dateRange.from || this.dateRange.to) || this.filters.showPast || (this.query && this.query.trim()) || this.filters.weekday.length > 0 || this.filters.zone.length > 0 || this.filters.category.length > 0;
     },
     filtered() {
       return this.applyFilters(this.normalized);
@@ -948,6 +898,10 @@ export default {
       return this.page * this.pageSize;
     },
     visible() {
+      // Server-side pagination: we only have the current page in ds.itemsRaw, so show all filtered (no slice)
+      if (this.ds.paginationMeta && this.ds.paginationMeta.TotalPages != null && this.ds.paginationMeta.TotalPages > 0) {
+        return this.filtered;
+      }
       return this.filtered.slice(this.startIdx, this.endIdx);
     },
     hasPrev() {
@@ -955,22 +909,19 @@ export default {
     },
     hasNext() {
       if (this.filtered.length === 0) return false;
+      // Server-side pagination: use API TotalPages so Next is enabled when more pages exist
+      if (this.ds.paginationMeta && this.ds.paginationMeta.TotalPages != null && this.ds.paginationMeta.TotalPages > 0) {
+        return this.page < this.ds.paginationMeta.TotalPages;
+      }
       return this.endIdx < this.filtered.length;
     },
     totalPages() {
-      // If filters are active, always use filtered results count
-      if (this.hasActiveFilters || (this.query && this.query.trim().length > 0)) {
-        // Calculate based on filtered results
-        if (this.filtered.length === 0) return 1;
-        return Math.ceil(this.filtered.length / this.pageSize);
-      }
-      
-      // No filters active - use TotalPages from API response if available
-      if (this.ds.paginationMeta && this.ds.paginationMeta.TotalPages !== null && this.ds.paginationMeta.TotalPages > 0) {
+      // Prefer API TotalPages whenever available (date/filters are applied on the server; response has correct total)
+      if (this.ds.paginationMeta && this.ds.paginationMeta.TotalPages != null && this.ds.paginationMeta.TotalPages > 0) {
         return this.ds.paginationMeta.TotalPages;
       }
-      
-      // Fallback to computed value based on filtered results
+
+      // No API pagination meta (e.g. no results yet): fallback to client-side from current page length
       if (this.filtered.length === 0) return 1;
       return Math.ceil(this.filtered.length / this.pageSize);
     },
@@ -983,24 +934,63 @@ export default {
     },
   },
   watch: {
-    query() {
-      this.page = 1;
-    },
     filters: {
       deep: true,
       handler() {
         this.page = 1;
       },
     },
-    async page(next, prev) {
+    dateRawfilter() {
+      this.store.setListPage('fairs', 1);
+      this.store.resetList('yearmarket');
+      this.store.fetchListPage('yearmarket', 1, {
+        rawfilter: this.dateRawfilter,
+        search: this.query?.trim() || undefined,
+        locfilter: this.locfilter || undefined,
+      });
+    },
+    locfilter() {
+      this.store.setListPage('fairs', 1);
+      this.store.resetList('yearmarket');
+      this.store.fetchListPage('yearmarket', 1, {
+        rawfilter: this.dateRawfilter,
+        search: this.query?.trim() || undefined,
+        locfilter: this.locfilter || undefined,
+        odhtagfilter: this.odhtagfilter || undefined,
+      });
+    },
+    odhtagfilter() {
+      this.store.setListPage('fairs', 1);
+      this.store.resetList('yearmarket');
+      this.store.fetchListPage('yearmarket', 1, {
+        rawfilter: this.dateRawfilter,
+        search: this.query?.trim() || undefined,
+        locfilter: this.locfilter || undefined,
+        odhtagfilter: this.odhtagfilter || undefined,
+      });
+    },
+    query() {
+      this.page = 1;
+      this.store.setListPage('fairs', 1);
+      this.store.resetList('yearmarket');
+      this.store.fetchListPage('yearmarket', 1, {
+        rawfilter: this.dateRawfilter,
+        search: this.query?.trim() || undefined,
+        locfilter: this.locfilter || undefined,
+        odhtagfilter: this.odhtagfilter || undefined,
+      });
+    },
+    async page(next) {
       const n = Number(next);
-      const p = Number(prev);
       if (!Number.isFinite(n) || n <= 0) return;
-      // Only load more data when going forward, not backwards
-      // Backwards navigation works with already loaded data
-      if (Number.isFinite(p) && n > p) {
-        await this.store.ensureLoaded('yearmarket', n * this.pageSize);
-      }
+      const current = this.ds.paginationMeta?.CurrentPage;
+      if (current === n) return;
+      await this.store.fetchListPage('yearmarket', n, {
+        rawfilter: this.dateRawfilter,
+        search: this.query?.trim() || undefined,
+        locfilter: this.locfilter || undefined,
+        odhtagfilter: this.odhtagfilter || undefined,
+      });
     },
     availableZones: {
       immediate: true,
@@ -1054,95 +1044,38 @@ export default {
     },
   },
   async mounted() {
-    // Load all fairs - use a very high number to ensure all pages are loaded
-    // The ensureLoaded function will stop when nextPageUrl is null (all pages fetched)
-    await this.store.ensureLoaded('yearmarket', 999999);
-    // Add click outside listener for dropdowns
+    await this.store.ensureFilterMetadataLoaded();
+    await this.store.fetchListPage('yearmarket', 1, {
+      rawfilter: this.dateRawfilter,
+      search: this.query?.trim() || undefined,
+      locfilter: this.locfilter || undefined,
+      odhtagfilter: this.odhtagfilter || undefined,
+    });
     document.addEventListener('click', this.handleClickOutside);
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
-    applyFilters(items, { ignoreZone = false, ignoreWeekday = false, ignoreCategory = false } = {}) {
-      let result = items;
-
-      // Text search
-      const q = String(this.query || '').trim().toLowerCase();
-      if (q) {
-        result = result.filter((n) => String(n.title || '').toLowerCase().includes(q));
+    applyFilters(items) {
+      // Client-side: no filters applied here as everything is now handled by API
+      return items;
+    },
+    categoryDisplayName(id) {
+      const tag = this.filterMetadataTags.find((t) => t.Id === id);
+      return tag?.Name || id;
+    },
+    municipalityDisplayName(m) {
+      const raw = m?.RawName ?? m?.Name;
+      if (!raw) return '';
+      if (typeof raw === 'string') return raw;
+      const language = this.lang || 'it';
+      let s = raw[language] || raw.en || raw.it || raw.de;
+      if (!s) {
+        const first = Object.values(raw).find((v) => typeof v === 'string' && String(v).trim());
+        s = first ? String(first).trim() : '';
       }
-
-      // Show past filter
-      if (!this.filters.showPast) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        result = result.filter((item) => {
-          if (!item.nextDate) return false;
-          const itemDate = new Date(item.nextDate);
-          itemDate.setHours(0, 0, 0, 0);
-          return itemDate >= today;
-        });
-      }
-
-      // Date range filter
-      if (this.dateRange.from || this.dateRange.to) {
-        const fromDate = this.dateRange.from ? new Date(this.dateRange.from) : null;
-        const toDate = this.dateRange.to ? new Date(this.dateRange.to) : null;
-        
-        if (fromDate) fromDate.setHours(0, 0, 0, 0);
-        if (toDate) {
-          toDate.setHours(23, 59, 59, 999);
-        }
-        
-        result = result.filter((item) => {
-          if (!item.nextDate) return false;
-          const itemDate = new Date(item.nextDate);
-          itemDate.setHours(0, 0, 0, 0);
-          
-          if (fromDate && toDate) {
-            return itemDate >= fromDate && itemDate <= toDate;
-          } else if (fromDate) {
-            return itemDate >= fromDate;
-          } else if (toDate) {
-            return itemDate <= toDate;
-          }
-          
-          return true;
-        });
-      }
-
-      // Weekday filter
-      if (!ignoreWeekday && this.filters.weekday.length > 0) {
-        // Multi-select using OR logic (items that match ANY selected day)
-        result = result.filter((item) => {
-          if (!item.nextDate) return false;
-          const itemDate = new Date(item.nextDate);
-          const dayIdx = itemDate.getDay();
-          // We store indices in this.filters.weekday
-          return this.filters.weekday.includes(dayIdx);
-        });
-      }
-
-      // Zone filter
-      if (!ignoreZone && this.filters.zone.length > 0) {
-        result = result.filter((item) => this.filters.zone.includes(item.municipality));
-      }
-
-      // Category filter
-      if (!ignoreCategory && this.filters.category.length > 0) {
-        result = result.filter((item) => {
-          const raw = item.raw;
-          const tags = raw?.ODHTags || raw?.Tags || [];
-          if (!Array.isArray(tags)) return false;
-          return tags.some((tag) => {
-            const name = tag?.Id || tag?.Name || tag;
-            return this.filters.category.includes(name);
-          });
-        });
-      }
-
-      return result;
+      return s || String(m?.Name || m?.Id || '');
     },
     pruneZoneSelection() {
       if (!Array.isArray(this.filters.zone) || this.filters.zone.length === 0) return;

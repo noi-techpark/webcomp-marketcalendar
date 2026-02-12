@@ -287,7 +287,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     <div v-for="fair in relatedFairs" :key="fair.id"
                       class="wcmc-community-detail__related-card flex-shrink-0 d-flex flex-column"
                       @click="openDetails(fair)">
-                      <ItemCard :item="fair" badge="Fair" variant="communityFair" :lang="config.language" @details="openDetails" />
+                      <ItemCard :item="fair" badge="Fair" variant="communityFair" :large-padding="false" :lang="config.language" @details="openDetails" />
                     </div>
                   </div>
                 </div>

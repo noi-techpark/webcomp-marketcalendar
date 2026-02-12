@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div class="d-flex align-items-center justify-content-between mb-3">
           <div class="wcmc-logo d-flex align-items-center">
             <img 
-              :src="theme === 'light' ? logoDarkSvg : logoSvg" 
+              :src="theme === 'light' ? (config.logoLight || defaultLogoLight) : (config.logoDark || defaultLogoDark)" 
               alt="Logo" 
               class="wcmc-icon-40"
             />
@@ -104,7 +104,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <!-- Logo -->
               <div class="wcmc-logo d-flex align-items-center">
                 <img 
-                  :src="theme === 'light' ? logoDarkSvg : logoSvg" 
+                  :src="theme === 'light' ? (config.logoLight || defaultLogoLight) : (config.logoDark || defaultLogoDark)" 
                   alt="Logo" 
                   class="wcmc-icon-40"
                 />
@@ -225,7 +225,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       <div class="wcmc-footer__text d-flex align-items-center justify-content-center gap-2">
         <span>Powered by Open Data Hub</span>
         <img 
-          :src="theme === 'light' ? logoDarkSvg : logoSvg" 
+          :src="theme === 'light' ? (config.logoLight || defaultLogoLight) : (config.logoDark || defaultLogoDark)" 
           alt="Logo" 
           class="wcmc-icon-20"
         />
@@ -265,8 +265,8 @@ import FairsDetail from './views/FairsDetail.vue';
 import MapView from './views/MapView.vue';
 import CommunityList from './views/CommunityList.vue';
 import CommunityDetail from './views/CommunityDetail.vue';
-import logoSvg from './logo/OpenDataHub_Logo_white.svg';
-import logoDarkSvg from './logo/OpenDataHub_Logo_dark.svg';
+import defaultLogoLight from './logo/OpenDataHub_Logo_dark.svg';
+import defaultLogoDark from './logo/OpenDataHub_Logo_white.svg';
 import fairsDarkSvg from './svgs/fairs_dark.svg';
 import fairsLightSvg from './svgs/fairs_light.svg';
 import marketDarkSvg from './svgs/market_dark.svg';
@@ -324,7 +324,7 @@ const currentProps = computed(() => {
 });
 
 function t(key) {
-  const lang = props.config.language || 'en';
+  const lang = store.state.language || props.config.language || 'en';
   const dict = {
     en: { fairs: 'Fairs', markets: 'Markets', map: 'Map', community: 'Community', light: 'Light', dark: 'Dark' },
     it: { fairs: 'Fiere', markets: 'Mercati', map: 'Mappa', community: 'Comunità', light: 'Chiaro', dark: 'Scuro' },
@@ -333,7 +333,7 @@ function t(key) {
   return (dict[lang] && dict[lang][key]) || dict.en[key] || key;
 }
 
-const lang = computed(() => props.config.language || 'it');
+const lang = computed(() => store.state.language || props.config.language || 'it');
 const theme = computed(() => {
   const currentTheme = props.config.theme || 'light';
   const availableThemes = props.config.availableThemes || ['light', 'dark'];
@@ -424,7 +424,7 @@ function menuItemVisible(item) {
 }
 
 const currentTitle = computed(() => {
-  const currentLang = props.config.language || 'it';
+  const currentLang = store.state.language || props.config.language || 'it';
   if (currentLang === 'it' && props.config.titleItalian) return props.config.titleItalian;
   if (currentLang === 'en' && props.config.titleEnglish) return props.config.titleEnglish;
   if (currentLang === 'de' && props.config.titleGerman) return props.config.titleGerman;
@@ -462,7 +462,7 @@ function handleLangClickOutside(event) {
 
 function onChangeLanguage(e) {
   const next = String(e?.target?.value || 'en');
-  props.config.language = next;
+  store.setLanguage(next);
   if (props.host && typeof props.host.setAttribute === 'function') {
     props.host.setAttribute('language', next);
   }

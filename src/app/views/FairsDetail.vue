@@ -17,14 +17,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
     <div v-else>
       <!-- Title -->
-     
+
 
       <!-- MOBILE Hero Section -->
-      <div class="d-xl-none wcmc-detail-mobile-hero rounded overflow-hidden position-relative mb-4" 
-           :style="mobileHeroBackgroundStyle">
+      <div class="d-xl-none wcmc-detail-mobile-hero rounded overflow-hidden position-relative mb-4"
+        :style="mobileHeroBackgroundStyle">
         <!-- Dark Overlay -->
         <div class="wcmc-detail-mobile-overlay position-absolute top-0 start-0 w-100 h-100"></div>
-        
+
         <!-- Content -->
         <div class="position-relative p-3 wcmc-z-index-1">
           <!-- Title and Actions -->
@@ -34,12 +34,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <button class="btn btn-primary d-flex align-items-center gap-2" type="button" @click="addToCalendar">
                 <span>Aggiungi</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+                  <path
+                    d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
                 </svg>
               </button>
               <button class="btn btn-primary p-2" type="button" @click="shareEvent" title="Share">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                  <path
+                    d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
                 </svg>
               </button>
             </div>
@@ -51,7 +53,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <div v-if="monthName" class="wcmc-detail-mobile-info-section mb-3">
               <div class="d-flex align-items-start gap-2">
                 <svg class="flex-shrink-0 mt-1" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+                  <path
+                    d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
                 </svg>
                 <div>
                   <div class="text-white text-uppercase fw-bold mb-1">{{ monthName }}</div>
@@ -64,7 +67,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <div v-if="openingHours || USE_MOCK_DATA" class="wcmc-detail-mobile-info-section mb-3">
               <div class="d-flex align-items-start gap-2">
                 <svg class="flex-shrink-0 mt-1" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                  <path
+                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
                 </svg>
                 <div>
                   <div class="text-white text-uppercase fw-bold mb-1">{{ t('schedule') }}</div>
@@ -77,12 +81,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <div v-if="item.municipality" class="wcmc-detail-mobile-info-section mb-3">
               <div class="d-flex align-items-start gap-2">
                 <svg class="flex-shrink-0 mt-1" width="16" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  <path
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                 </svg>
                 <div>
                   <div class="text-white text-uppercase fw-bold mb-1">{{ locationWithProvince }}</div>
-                  <a v-if="districtGoogleMapsUrl" :href="districtGoogleMapsUrl" target="_blank" 
-                     class="text-white opacity-75 text-decoration-underline">
+                  <a v-if="districtGoogleMapsUrl" :href="districtGoogleMapsUrl" target="_blank"
+                    class="text-white opacity-75 text-decoration-underline">
                     {{ fullAddress || "-" }}
                   </a>
                   <div v-else class="text-white opacity-75">{{ fullAddress || "-" }}</div>
@@ -93,8 +98,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <!-- Frequency -->
             <div v-if="raw" class="wcmc-detail-mobile-info-section mb-3">
               <div class="wcmc-market-day-card__meta d-flex align-items-center gap-2">
-                <svg class="wcmc-market-day-card__icon flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+                <svg class="wcmc-market-day-card__icon flex-shrink-0" width="16" height="16" viewBox="0 0 24 24"
+                  fill="currentColor">
+                  <path
+                    d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
                 </svg>
                 <span class="text-white">{{ frequency }}</span>
               </div>
@@ -139,40 +146,41 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div class="p-3 pb-0">
           <h2 class="text-uppercase fw-bold mb-3 wcmc-section-title">{{ t('locationAndServices') }}</h2>
         </div>
-        <div class="wcmc-detail-rect5-map position-relative w-100 overflow-hidden wcmc-map-container-height" style="color: #000">
+        <div class="wcmc-detail-rect5-map position-relative w-100 overflow-hidden wcmc-map-container-height"
+          style="color: #000">
           <div v-if="mapIframeUrl" class="card-body p-0 h-100">
             <p id="twrap" class="card-text text-center mb-0 h-100">
-              <iframe id="tframe" class="w-100 h-100" style="border: none;" frameborder="0" :src="mapIframeUrl"></iframe>
+              <iframe id="tframe" class="w-100 h-100" style="border: none;" frameborder="0"
+                :src="mapIframeUrl"></iframe>
             </p>
           </div>
         </div>
       </div>
 
       <!-- DESKTOP Hero Section -->
-      <div class="d-none d-xl-block wcmc-detail-hero-card rounded p-4 mb-4">
+      <div class="d-none d-xl-block wcmc-detail-hero-card rounded p-4">
         <div class="row g-4">
 
           <!-- LEFT: Carousel & Thumbnails -->
           <div class="col-12 col-lg-2 col-xl-2">
             <div class="mb-3">
-              <div v-if="validCarouselImages.length > 0" :id="`fairCarousel-${id}`" class="carousel slide rounded overflow-hidden wcmc-aspect-ratio-1"
-                ref="heroCarousel">
+              <div v-if="validCarouselImages.length > 0" :id="`fairCarousel-${id}`"
+                class="carousel slide rounded overflow-hidden wcmc-aspect-ratio-1" ref="heroCarousel">
                 <!-- Slides -->
                 <div class="carousel-inner h-100">
                   <div v-for="(img, idx) in validCarouselImages" :key="`slide-${idx}`" class="carousel-item h-100"
                     :class="{ active: idx === 0 }">
-                    <img v-if="!imageErrors[img]" 
-                      :src="img" 
+                    <img v-if="!imageErrors[img]" :src="img"
                       class="d-block w-100 h-100 wcmc-object-fit-cover wcmc-lightbox-trigger"
-                      :alt="`${item.title} - Image ${idx + 1}`"
-                      @error="handleImageError($event, img)"
-                      @load="handleImageLoad(img)"
-                      @click="openLightbox(idx)" />
-                    <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
-                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21,15 16,10 5,21"/>
+                      :alt="`${item.title} - Image ${idx + 1}`" @error="handleImageError($event, img)"
+                      @load="handleImageLoad(img)" @click="openLightbox(idx)" />
+                    <div v-else
+                      class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21,15 16,10 5,21" />
                       </svg>
                     </div>
                   </div>
@@ -191,11 +199,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </button>
               </div>
               <!-- Placeholder when no images -->
-              <div v-else class="wcmc-fair-card__image--placeholder w-100 rounded overflow-hidden wcmc-aspect-ratio-1 d-flex align-items-center justify-content-center">
+              <div v-else
+                class="wcmc-fair-card__image--placeholder w-100 rounded overflow-hidden wcmc-aspect-ratio-1 d-flex align-items-center justify-content-center">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21,15 16,10 5,21"/>
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21,15 16,10 5,21" />
                 </svg>
               </div>
             </div>
@@ -207,7 +216,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <div class="d-flex align-items-center gap-2">
 
                 <!-- Left Arrow -->
-                <button v-if="totalThumbnailPages > 1" @click="prevThumbnailPage" class="wcmc-thumb-nav-btn d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                <button v-if="totalThumbnailPages > 1" @click="prevThumbnailPage"
+                  class="wcmc-thumb-nav-btn d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
                   aria-label="Previous thumbnails">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M11 1l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
@@ -220,26 +230,26 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                   <div v-for="(img, idx) in visibleThumbnails" :key="`thumb-${currentThumbnailPage}-${idx}`"
                     class="wcmc-thumbnail flex-shrink-0 rounded overflow-hidden wcmc-gallery-item" :class="{
                       'wcmc-thumbnail--active': getGlobalThumbnailIndex(idx) === activeSlideIndex,
-                       'wcmc-thumbnail--dimmed': getGlobalThumbnailIndex(idx) !== activeSlideIndex
-                     }" @click="goToSlide(getGlobalThumbnailIndex(idx))">
-                    <img v-if="!imageErrors[img]"
-                      class="w-100 h-100 wcmc-object-fit-cover" 
-                      :src="img" 
-                      :alt="`Thumbnail ${getGlobalThumbnailIndex(idx) + 1}`"
-                      @error="handleImageError($event, img)"
+                      'wcmc-thumbnail--dimmed': getGlobalThumbnailIndex(idx) !== activeSlideIndex
+                    }" @click="goToSlide(getGlobalThumbnailIndex(idx))">
+                    <img v-if="!imageErrors[img]" class="w-100 h-100 wcmc-object-fit-cover" :src="img"
+                      :alt="`Thumbnail ${getGlobalThumbnailIndex(idx) + 1}`" @error="handleImageError($event, img)"
                       @load="handleImageLoad(img)" />
-                    <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21,15 16,10 5,21"/>
+                    <div v-else
+                      class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21,15 16,10 5,21" />
                       </svg>
                     </div>
                   </div>
                 </div>
 
                 <!-- Right Arrow -->
-                <button v-if="totalThumbnailPages > 1" @click="nextThumbnailPage" class="wcmc-thumb-nav-btn d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                <button v-if="totalThumbnailPages > 1" @click="nextThumbnailPage"
+                  class="wcmc-thumb-nav-btn d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
                   aria-label="Next thumbnails">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M5 1l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
@@ -251,7 +261,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <!-- Dot Indicators -->
               <div v-if="totalThumbnailPages > 1" class="wcmc-thumb-dots d-flex gap-2 justify-content-center mt-2">
                 <button v-for="pageIdx in thumbnailPageDots" :key="`dot-${pageIdx}`" @click="goToThumbnailPage(pageIdx)"
-                  class="wcmc-thumb-dot rounded-circle border-0 p-0 wcmc-pagination-dot-base" :class="{ 'wcmc-thumb-dot--active': pageIdx === currentThumbnailPage }"
+                  class="wcmc-thumb-dot rounded-circle border-0 p-0 wcmc-pagination-dot-base"
+                  :class="{ 'wcmc-thumb-dot--active': pageIdx === currentThumbnailPage }"
                   :aria-label="`Go to thumbnail page ${pageIdx + 1}`"></button>
               </div>
             </div>
@@ -274,7 +285,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </svg>
                   </button>
                 </div>
-             </div>
+              </div>
             </div>
 
             <!-- Info Grid: 3 columns -->
@@ -316,26 +327,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </div>
 
                 <div v-if="fullAddress || USE_MOCK_DATA" class="mb-3">
-                  <a 
-                    v-if="districtGoogleMapsUrl" 
-                    :href="districtGoogleMapsUrl" 
-                    target="_blank"
-                    class="small text-decoration-underline wcmc-padding-left-dynamic-2 wcmc-color-inherit"
-                  >
+                  <a v-if="districtGoogleMapsUrl" :href="districtGoogleMapsUrl" target="_blank"
+                    class="small text-decoration-underline wcmc-padding-left-dynamic-2 wcmc-color-inherit">
                     {{ fullAddress || "-" }}
                   </a>
-                  <div 
-                    v-else 
-                    class="small text-decoration-underline wcmc-padding-left-dynamic-2"
-                  >
+                  <div v-else class="small text-decoration-underline wcmc-padding-left-dynamic-2">
                     {{ fullAddress || "_" }}
                   </div>
                 </div>
 
                 <div v-if="raw" class="mb-3">
                   <div class="wcmc-market-day-card__meta d-flex align-items-center gap-2">
-                    <svg class="wcmc-market-day-card__icon flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+                    <svg class="wcmc-market-day-card__icon flex-shrink-0" width="16" height="16" viewBox="0 0 24 24"
+                      fill="currentColor">
+                      <path
+                        d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
                     </svg>
                     <span>{{ frequency }}</span>
                   </div>
@@ -390,10 +396,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <h2 class="wcmc-detail-section-title fw-semibold text-uppercase mb-3">{{ t('locationAndServices') }}</h2>
 
           <!-- Map (1359x577px at x:45, y:561) -->
-          <div v-if="mapCoords" class="wcmc-detail-rect5-map position-relative w-100 rounded overflow-hidden mt-4 wcmc-detail-map-height" style="color: #000">
+          <div v-if="mapCoords"
+            class="wcmc-detail-rect5-map position-relative w-100 rounded overflow-hidden mt-4 wcmc-detail-map-height"
+            style="color: #000">
             <div v-if="mapIframeUrl" class="card-body p-0 h-100">
               <p id="twrap" class="card-text text-center mb-0 h-100">
-                <iframe id="tframe" class="w-100 h-100" style="border: none;" frameborder="0" :src="mapIframeUrl"></iframe>
+                <iframe id="tframe" class="w-100 h-100" style="border: none;" frameborder="0"
+                  :src="mapIframeUrl"></iframe>
               </p>
             </div>
           </div>
@@ -401,8 +410,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       </div>
 
       <!-- Exhibitors Section -->
-      <div class="wcmc-detail-exhibitors-section mt-5 p-3 rounded">
-        
+      <div class="wcmc-detail-exhibitors-section mt-4 p-3 rounded">
+
         <div class="alert alert-info" v-if="config.debug">
           Debug: Found {{ exhibitors.length }} exhibitors
           <pre>{{ JSON.stringify(exhibitors.slice(0, 2), null, 2) }}</pre>
@@ -422,81 +431,65 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div class="d-flex gap-2 mb-3 wcmc-flex-nowrap">
           <!-- Category Filter Multiselect -->
           <div class="wcmc-filter-group position-relative wcmc-flex-1">
-            <div 
-              class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between wcmc-cursor-pointer wcmc-user-select-none" 
-              @click="toggleCategoryDropdown"
-              :class="{ 'border-primary': isCategoryDropdownOpen }"
-            >
+            <div
+              class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between wcmc-cursor-pointer wcmc-user-select-none"
+              @click="toggleCategoryDropdown" :class="{ 'border-primary': isCategoryDropdownOpen }">
               <div class="text-truncate">
                 <span v-if="exhibitorCategoryFilters.length === 0">{{ t('allCategories') }}</span>
                 <span v-else>
-                  {{ exhibitorCategoryFilters.length === 1 ? exhibitorCategoryFilters[0] : `${exhibitorCategoryFilters.length} ${t('categoriesSelected')}` }}
+                  {{ exhibitorCategoryFilters.length === 1 ? exhibitorCategoryFilters[0] :
+                    `${exhibitorCategoryFilters.length} ${t('categoriesSelected')}` }}
                 </span>
               </div>
-              <svg class="wcmc-filter-chevron ms-2 flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" :style="{ transform: isCategoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
-                <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg class="wcmc-filter-chevron ms-2 flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none"
+                stroke="currentColor"
+                :style="{ transform: isCategoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
+                <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
 
             <!-- Dropdown Menu -->
-            <div v-if="isCategoryDropdownOpen" class="wcmc-multiselect-dropdown wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1" @click.stop>
+            <div v-if="isCategoryDropdownOpen"
+              class="wcmc-multiselect-dropdown wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
+              @click.stop>
               <!-- Search input for categories -->
               <div class="mb-2">
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  :placeholder="t('search')"
-                  :value="categorySearchQuery"
-                  @input="categorySearchQuery = $event.target.value"
-                  @click.stop
-                />
+                <input type="text" class="form-control form-control-sm" :placeholder="t('search')"
+                  :value="categorySearchQuery" @input="categorySearchQuery = $event.target.value" @click.stop />
               </div>
               <div class="form-check mb-2">
-                 <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="cat-all" 
-                  :checked="exhibitorCategoryFilters.length === 0"
-                  @change="toggleAllCategories"
-                >
+                <input class="form-check-input" type="checkbox" id="cat-all"
+                  :checked="exhibitorCategoryFilters.length === 0" @change="toggleAllCategories">
                 <label class="form-check-label w-100 small wcmc-cursor-pointer" for="cat-all">
                   {{ t('allCategories') }}
                 </label>
               </div>
               <hr class="my-1">
               <div v-for="cat in filteredExhibitorCategoriesForSearch" :key="cat" class="form-check mb-1">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  :id="`cat-${cat}`" 
-                  :value="cat" 
-                  v-model="exhibitorCategoryFilters"
-                >
+                <input class="form-check-input" type="checkbox" :id="`cat-${cat}`" :value="cat"
+                  v-model="exhibitorCategoryFilters">
                 <label class="form-check-label w-100 small wcmc-cursor-pointer" :for="`cat-${cat}`">
                   {{ cat }}
                 </label>
               </div>
-              <div v-if="filteredExhibitorCategoriesForSearch.length === 0 && categorySearchQuery.trim()" class="text-muted text-center p-2 small">
+              <div v-if="filteredExhibitorCategoriesForSearch.length === 0 && categorySearchQuery.trim()"
+                class="text-muted text-center p-2 small">
                 {{ t('noResults') }}
               </div>
             </div>
 
             <!-- Overlay to close dropdown -->
-            <div v-if="isCategoryDropdownOpen" class="position-fixed top-0 start-0 w-100 h-100 wcmc-cursor-default" style="z-index: 999;" @click="isCategoryDropdownOpen = false"></div>
+            <div v-if="isCategoryDropdownOpen" class="position-fixed top-0 start-0 w-100 h-100 wcmc-cursor-default"
+              style="z-index: 999;" @click="isCategoryDropdownOpen = false"></div>
           </div>
-          
+
           <!-- Search Input -->
           <div class="wcmc-search-wrapper wcmc-flex-1">
             <div class="wcmc-search-box position-relative d-flex align-items-center">
-              <input
-                id="wcmc-exhibitor-search"
-                name="exhibitor-search"
-                type="search"
-                class="wcmc-search-input form-control"
-                placeholder="Cerca..."
-                v-model="exhibitorSearchQuery"
-              />
-              <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="16" height="17" viewBox="0 0 24 24" fill="currentColor">
+              <input id="wcmc-exhibitor-search" name="exhibitor-search" type="search"
+                class="wcmc-search-input form-control" placeholder="Cerca..." v-model="exhibitorSearchQuery" />
+              <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="16" height="17" viewBox="0 0 24 24"
+                fill="currentColor">
                 <path
                   d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
               </svg>
@@ -512,8 +505,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <span>NOME ESPOSITORE / CATEGORIA / POSTEGGIO / INDIRIZZO / COORDINATE</span>
               <button class="btn btn-sm border-0 p-0 wcmc-sort-btn-size" @click="toggleSort('name')">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 3l3 3H5l3-3z"/>
-                  <path d="M8 13l-3-3h6l-3 3z"/>
+                  <path d="M8 3l3 3H5l3-3z" />
+                  <path d="M8 13l-3-3h6l-3 3z" />
                 </svg>
               </button>
             </div>
@@ -521,11 +514,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
           <!-- Exhibitor Cards -->
           <div class="wcmc-mobile-exhibitors-list">
-            <div v-for="(exhibitor, idx) in paginatedExhibitors" :key="idx" 
-                 class="wcmc-mobile-exhibitor-card py-3 mb-0">
+            <div v-for="(exhibitor, idx) in paginatedExhibitors" :key="idx"
+              class="wcmc-mobile-exhibitor-card py-3 mb-0">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <h3 class="wcmc-mobile-exhibitor-name mb-0">{{ exhibitor.name }}</h3>
-                <span v-if="exhibitor.category" class="wcmc-exhibitor-category-badge badge text-uppercase flex-shrink-0 ms-2">
+                <span v-if="exhibitor.category"
+                  class="wcmc-exhibitor-category-badge badge text-uppercase flex-shrink-0 ms-2">
                   {{ exhibitor.category }}
                 </span>
               </div>
@@ -537,8 +531,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </div>
                 <div v-if="exhibitor.gpsInfo">
                   <a :href="`https://www.google.com/maps?q=${exhibitor.gpsInfo.lat},${exhibitor.gpsInfo.lon}`"
-                     target="_blank" 
-                     class="text-decoration-underline small wcmc-color-inherit">
+                    target="_blank" class="text-decoration-underline small wcmc-color-inherit">
                     {{ exhibitor.gpsInfo.lat }}, {{ exhibitor.gpsInfo.lon }}
                   </a>
                 </div>
@@ -554,12 +547,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <tr>
                 <th scope="col" class="sortable wcmc-cursor-pointer" @click="toggleSort('name')">
                   {{ t('exhibitorName') }}
-                  <img
-                    :key="theme"
-                    :src="theme === 'light' ? orderLightSvg : orderDarkSvg"
-                    alt="Order"
-                    class="wcmc-th-sort-icon"
-                  />
+                  <img :key="theme" :src="theme === 'light' ? orderLightSvg : orderDarkSvg" alt="Order"
+                    class="wcmc-th-sort-icon" />
                 </th>
                 <th scope="col">{{ t('category') }}</th>
                 <th scope="col">{{ t('stall') }}</th>
@@ -580,8 +569,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <td>
                   <a v-if="exhibitor.gpsInfo"
                     :href="`https://www.google.com/maps?q=${exhibitor.gpsInfo.lat},${exhibitor.gpsInfo.lon}`"
-                    target="_blank" 
-                    class="text-decoration-underline wcmc-color-inherit">
+                    target="_blank" class="text-decoration-underline wcmc-color-inherit">
                     {{ exhibitor.gpsInfo.lat }}, {{ exhibitor.gpsInfo.lon }}
                   </a>
                 </td>
@@ -589,44 +577,31 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </tbody>
           </table>
         </div>
-        
+
         <!-- Pagination -->
-        <nav v-if="exhibitorsPages > 1" aria-label="Exhibitors pagination" class="wcmc-pager d-flex gap-2 justify-content-center justify-content-md-end mt-3">
-          <button
-            class="wcmc-pager-btn wcmc-pager-btn--arrow"
-            type="button"
-            :disabled="exhibitorsPage === 1"
-            aria-label="Previous page"
-            @click="exhibitorsPage = exhibitorsPage - 1"
-          >
+        <nav v-if="exhibitorsPages > 1" aria-label="Exhibitors pagination"
+          class="wcmc-pager d-flex gap-2 justify-content-center justify-content-md-end mt-3">
+          <button class="wcmc-pager-btn wcmc-pager-btn--arrow" type="button" :disabled="exhibitorsPage === 1"
+            aria-label="Previous page" @click="exhibitorsPage = exhibitorsPage - 1">
             <svg width="5" height="13" viewBox="0 0 5 13" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M4 1L1 6.5L4 12"/>
+              <path d="M4 1L1 6.5L4 12" />
             </svg>
           </button>
 
-          <button 
-            v-for="page in visibleExhibitorPages" 
-            :key="page"
-            class="wcmc-pager-btn"
-            :class="{ 'is-active': page === exhibitorsPage }"
-            type="button"
+          <button v-for="page in visibleExhibitorPages" :key="page" class="wcmc-pager-btn"
+            :class="{ 'is-active': page === exhibitorsPage }" type="button"
             :disabled="page === '...' || page === exhibitorsPage"
             :aria-label="page === '...' ? undefined : `Go to page ${page}`"
             :aria-current="page === exhibitorsPage ? 'page' : undefined"
-            @click="page !== '...' && page !== exhibitorsPage && (exhibitorsPage = page)"
-          >
+            @click="page !== '...' && page !== exhibitorsPage && (exhibitorsPage = page)">
             {{ page }}
           </button>
 
-          <button
-            class="wcmc-pager-btn wcmc-pager-btn--arrow"
-            type="button"
-            :disabled="exhibitorsPage >= exhibitorsPages"
-            aria-label="Next page"
-            @click="exhibitorsPage = exhibitorsPage + 1"
-          >
+          <button class="wcmc-pager-btn wcmc-pager-btn--arrow" type="button"
+            :disabled="exhibitorsPage >= exhibitorsPages" aria-label="Next page"
+            @click="exhibitorsPage = exhibitorsPage + 1">
             <svg width="5" height="13" viewBox="0 0 5 13" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M1 1L4 6.5L1 12"/>
+              <path d="M1 1L4 6.5L1 12" />
             </svg>
           </button>
         </nav>
@@ -637,94 +612,93 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div v-if="validCarouselImages.length > 0" class="row g-2">
           <!-- Main Carousel (Left) -->
           <div class="col-9 col-lg-10">
-             <div :id="`fairCarousel-${id}`" class="carousel slide rounded overflow-hidden wcmc-carousel-height" ref="heroCarousel">
-                <!-- Slides -->
-                <div class="carousel-inner h-100">
-                  <div v-for="(img, idx) in validCarouselImages" :key="`slide-${idx}`" class="carousel-item h-100" :class="{ active: idx === 0 }">
-                    <img v-if="!imageErrors[img]"
-                      :src="img" 
-                      class="d-block w-100 h-100 wcmc-object-fit-cover wcmc-lightbox-trigger" 
-                      :alt="`${item.title} - Image ${idx + 1}`"
-                      @error="handleImageError($event, img)"
-                      @load="handleImageLoad(img)"
-                      @click="openLightbox(idx)" />
-                    <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
-                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21,15 16,10 5,21"/>
-                      </svg>
-                    </div>
+            <div :id="`fairCarousel-${id}`" class="carousel slide rounded overflow-hidden wcmc-carousel-height"
+              ref="heroCarousel">
+              <!-- Slides -->
+              <div class="carousel-inner h-100">
+                <div v-for="(img, idx) in validCarouselImages" :key="`slide-${idx}`" class="carousel-item h-100"
+                  :class="{ active: idx === 0 }">
+                  <img v-if="!imageErrors[img]" :src="img"
+                    class="d-block w-100 h-100 wcmc-object-fit-cover wcmc-lightbox-trigger"
+                    :alt="`${item.title} - Image ${idx + 1}`" @error="handleImageError($event, img)"
+                    @load="handleImageLoad(img)" @click="openLightbox(idx)" />
+                  <div v-else
+                    class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21,15 16,10 5,21" />
+                    </svg>
                   </div>
                 </div>
-                <!-- Controls -->
-                <button v-if="validCarouselImages.length > 1" class="carousel-control-prev" type="button" :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="prev">
-                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Previous</span>
-                </button>
-                <button v-if="validCarouselImages.length > 1" class="carousel-control-next" type="button" :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="next">
-                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Next</span>
-                </button>
               </div>
+              <!-- Controls -->
+              <button v-if="validCarouselImages.length > 1" class="carousel-control-prev" type="button"
+                :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button v-if="validCarouselImages.length > 1" class="carousel-control-next" type="button"
+                :data-bs-target="`#fairCarousel-${id}`" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            </div>
           </div>
 
           <!-- Vertical Thumbnails (Right) -->
           <div class="col-3 col-lg-2">
-              <div v-if="validCarouselImages.length > 0" class="wcmc-thumbnail-gallery h-100">
-                  <div class="d-flex flex-column gap-2 h-100">
-                      <!-- Thumbnails (showing first 4 or visible ones based on height) -->
-                      <!-- Force overflow hidden or allow scroll if needed, but styling implies static list -->
-                      <div v-for="(img, idx) in validCarouselImages.slice(0, 4)" :key="`thumb-mobile-${idx}`" 
-                           class="wcmc-thumbnail flex-shrink-0 rounded overflow-hidden position-relative wcmc-thumbnail-item" 
-                           :class="{ 
-                             'wcmc-thumbnail--active': idx === activeSlideIndex, 
-                             'wcmc-thumbnail--dimmed': idx !== activeSlideIndex 
-                           }" 
-                           @click="goToSlide(idx)">
-                        <img v-if="!imageErrors[img]"
-                          class="w-100 h-100 wcmc-object-fit-cover" 
-                          :src="img" 
-                          :alt="`Thumbnail ${idx + 1}`"
-                          @error="handleImageError($event, img)"
-                          @load="handleImageLoad(img)" />
-                        <div v-else class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                            <circle cx="8.5" cy="8.5" r="1.5"/>
-                            <polyline points="21,15 16,10 5,21"/>
-                          </svg>
-                        </div>
-                        <!-- Active Border/Overlay if needed, currently handled by class -->
-                        <div v-if="idx === activeSlideIndex" class="position-absolute top-0 start-0 w-100 h-100 rounded"></div>
-                      </div>
+            <div v-if="validCarouselImages.length > 0" class="wcmc-thumbnail-gallery h-100">
+              <div class="d-flex flex-column gap-2 h-100">
+                <!-- Thumbnails (showing first 4 or visible ones based on height) -->
+                <!-- Force overflow hidden or allow scroll if needed, but styling implies static list -->
+                <div v-for="(img, idx) in validCarouselImages.slice(0, 4)" :key="`thumb-mobile-${idx}`"
+                  class="wcmc-thumbnail flex-shrink-0 rounded overflow-hidden position-relative wcmc-thumbnail-item"
+                  :class="{
+                    'wcmc-thumbnail--active': idx === activeSlideIndex,
+                    'wcmc-thumbnail--dimmed': idx !== activeSlideIndex
+                  }" @click="goToSlide(idx)">
+                  <img v-if="!imageErrors[img]" class="w-100 h-100 wcmc-object-fit-cover" :src="img"
+                    :alt="`Thumbnail ${idx + 1}`" @error="handleImageError($event, img)" @load="handleImageLoad(img)" />
+                  <div v-else
+                    class="wcmc-fair-card__image--placeholder w-100 h-100 d-flex align-items-center justify-content-center">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21,15 16,10 5,21" />
+                    </svg>
                   </div>
+                  <!-- Active Border/Overlay if needed, currently handled by class -->
+                  <div v-if="idx === activeSlideIndex" class="position-absolute top-0 start-0 w-100 h-100 rounded">
+                  </div>
+                </div>
               </div>
+            </div>
           </div>
         </div>
         <!-- Placeholder when no images -->
-        <div v-else class="wcmc-fair-card__image--placeholder w-100 rounded overflow-hidden wcmc-carousel-height d-flex align-items-center justify-content-center">
+        <div v-else
+          class="wcmc-fair-card__image--placeholder w-100 rounded overflow-hidden wcmc-carousel-height d-flex align-items-center justify-content-center">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21,15 16,10 5,21"/>
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21,15 16,10 5,21" />
           </svg>
         </div>
       </div>
 
       <!-- Similar/Nearby Fairs Section -->
-      <div v-if="similarFairs.length > 0 || nearbyFairs.length > 0" class="wcmc-related-fairs-section mt-2 py-4 px-3">
+      <div v-if="similarFairs.length > 0 || nearbyFairs.length > 0"
+        class="wcmc-related-fairs-section mt-4 py-4 px-3 rounded">
         <!-- Tabs -->
         <div class="wcmc-related-tabs d-flex gap-2 mb-4 ">
-          <button 
-            @click="similarFairsTab = 'similar'" 
-            :class="{ active: similarFairsTab === 'similar' }"
+          <button @click="similarFairsTab = 'similar'" :class="{ active: similarFairsTab === 'similar' }"
             class="wcmc-tab-btn border-0 rounded px-4 py-3 fw-medium">
             {{ t('similarFairs') }}
           </button>
-          <button 
-            @click="similarFairsTab = 'nearby'" 
-            :class="{ active: similarFairsTab === 'nearby' }"
+          <button @click="similarFairsTab = 'nearby'" :class="{ active: similarFairsTab === 'nearby' }"
             class="wcmc-tab-btn border-0 rounded px-4 py-3 fw-medium">
             {{ t('nearbyFairs') }}
           </button>
@@ -734,38 +708,39 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div v-if="isLoadingRelated" class="text-center py-5">
           <div class="spinner-border" role="status"></div>
         </div>
-        
+
         <div v-else-if="displayedRelatedFairs.length > 0" class="wcmc-slider-container position-relative ">
           <!-- Left Arrow -->
-          <button class="wcmc-slider-arrow wcmc-slider-arrow-left position-absolute top-50 translate-middle-y border-0 bg-transparent d-flex align-items-center justify-content-center wcmc-slider-arrow-pos-left" @click="slideLeft" :disabled="isSliding">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            class="wcmc-slider-arrow wcmc-slider-arrow-left position-absolute top-50 translate-middle-y border-0 bg-transparent d-flex align-items-center justify-content-center wcmc-slider-arrow-pos-left"
+            @click="slideLeft" :disabled="isSliding">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
 
           <!-- Cards Slider -->
-          <div class="wcmc-slider-track d-flex gap-4 overflow-x-auto align-items-stretch p-2 wcmc-slider-track-base" ref="sliderTrack">
-            <div 
-              v-for="fair in displayedRelatedFairs" 
-              :key="fair.id"
+          <div class="wcmc-slider-track d-flex gap-4 overflow-x-auto align-items-stretch p-2 wcmc-slider-track-base"
+            ref="sliderTrack">
+            <div v-for="fair in displayedRelatedFairs" :key="fair.id"
               class="flex-shrink-0 wcmc-slider-card-item wcmc-flex-min-width-0">
-              <ItemCard 
-                :item="fair" 
-                :lang="config.language" 
-                :large-padding="true"
-                @details="(item) => navigateToFair(item.id)" 
-              />
+              <ItemCard :item="fair" :lang="config.language" :large-padding="true"
+                @details="(item) => navigateToFair(item.id)" />
             </div>
           </div>
 
           <!-- Right Arrow -->
-          <button class="wcmc-slider-arrow wcmc-slider-arrow-right position-absolute top-50 translate-middle-y border-0 bg-transparent d-flex align-items-center justify-content-center wcmc-slider-arrow-pos-right" @click="slideRight" :disabled="isSliding">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            class="wcmc-slider-arrow wcmc-slider-arrow-right position-absolute top-50 translate-middle-y border-0 bg-transparent d-flex align-items-center justify-content-center wcmc-slider-arrow-pos-right"
+            @click="slideRight" :disabled="isSliding">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
         </div>
-        
+
         <div v-else class="text-center text-muted py-4">
           No {{ similarFairsTab === 'similar' ? 'similar' : 'nearby' }} fairs found.
         </div>
@@ -778,12 +753,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <div class="row">
             <!-- LEFT: Logo/Icon -->
             <div class="col-lg-1">
-              <div v-if="communityContactData?.logoUrl" class="wcmc-contact-logo-container rounded overflow-hidden wcmc-logo-container">
-                <img :src="communityContactData.logoUrl" :alt="communityContactData.name || 'Logo'" class="wcmc-logo-img w-100 h-100" />
+              <div v-if="communityContactData?.logoUrl"
+                class="wcmc-contact-logo-container rounded overflow-hidden wcmc-logo-container">
+                <img :src="communityContactData.logoUrl" :alt="communityContactData.name || 'Logo'"
+                  class="wcmc-logo-img w-100 h-100" />
               </div>
               <div v-else class="wcmc-contact-logo-container rounded w-100 h-100 wcmc-logo-placeholder">
-                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="wcmc-logo-svg">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D" stroke-width="2" fill="none"/>
+                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                  class="wcmc-logo-svg">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D" stroke-width="2"
+                    fill="none" />
                 </svg>
               </div>
             </div>
@@ -793,20 +772,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <!-- Top Row: Community Information -->
               <div v-if="communityContactData" class="row mb-4">
                 <div class="col-12 mb-3">
-                  <h3 class="text-uppercase fw-semibold mb-0 wcmc-contact-title">{{ communityContactData.name || t('communityName') }}</h3>
+                  <h3 class="text-uppercase fw-semibold mb-0 wcmc-contact-title">{{ communityContactData.name ||
+                    t('communityName') }}</h3>
                 </div>
                 <div class="col-lg-3 mb-2 mb-lg-0">
                   <div class="small">{{ communityContactData.address || "-" }}</div>
                 </div>
                 <div class="col-lg-3 mb-2 mb-lg-0">
                   <div v-if="communityContactData.website" class="small">
-                    <a :href="communityContactData.website" target="_blank" class="wcmc-detail-link text-decoration-underline text-break">{{ communityContactData.website }}</a>
+                    <a :href="communityContactData.website" target="_blank"
+                      class="wcmc-detail-link text-decoration-underline text-break">{{ communityContactData.website
+                      }}</a>
                   </div>
                   <div v-else class="small">-</div>
                 </div>
                 <div class="col-lg-3 mb-2 mb-lg-0">
                   <div v-if="communityContactData.phone" class="small">
-                    <a :href="`tel:${communityContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ communityContactData.phone }}</a>
+                    <a :href="`tel:${communityContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{
+                      communityContactData.phone }}</a>
                   </div>
                   <div v-else class="small">-</div>
                 </div>
@@ -826,13 +809,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 </div>
                 <div class="col-lg-3 mb-2 mb-lg-0">
                   <div v-if="referentContactData.phone" class="small">
-                    <a :href="`tel:${referentContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ referentContactData.phone }}</a>
+                    <a :href="`tel:${referentContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{
+                      referentContactData.phone }}</a>
                   </div>
                   <div v-else class="small">-</div>
                 </div>
                 <div class="col-lg-3 mb-2 mb-lg-0">
                   <div v-if="referentContactData.email" class="small">
-                    <a :href="`mailto:${referentContactData.email}`" class="wcmc-detail-link text-decoration-underline text-break">{{ referentContactData.email }}</a>
+                    <a :href="`mailto:${referentContactData.email}`"
+                      class="wcmc-detail-link text-decoration-underline text-break">{{ referentContactData.email }}</a>
                   </div>
                   <div v-else class="small">-</div>
                 </div>
@@ -845,19 +830,26 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         <div class="d-xl-none">
           <!-- Logo -->
           <div class="mb-4">
-            <div v-if="communityContactData?.logoUrl" class="wcmc-contact-logo-container rounded overflow-hidden wcmc-logo-container" style="width: 80px; height: 80px;">
-              <img :src="communityContactData.logoUrl" :alt="communityContactData.name || 'Logo'" class="wcmc-logo-img w-100 h-100" />
+            <div v-if="communityContactData?.logoUrl"
+              class="wcmc-contact-logo-container rounded overflow-hidden wcmc-logo-container"
+              style="width: 80px; height: 80px;">
+              <img :src="communityContactData.logoUrl" :alt="communityContactData.name || 'Logo'"
+                class="wcmc-logo-img w-100 h-100" />
             </div>
-            <div v-else class="wcmc-contact-logo-container rounded wcmc-logo-placeholder" style="width: 80px; height: 80px;">
-              <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="wcmc-logo-svg">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D" stroke-width="2" fill="none"/>
+            <div v-else class="wcmc-contact-logo-container rounded wcmc-logo-placeholder"
+              style="width: 80px; height: 80px;">
+              <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                class="wcmc-logo-svg">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D" stroke-width="2"
+                  fill="none" />
               </svg>
             </div>
           </div>
 
           <!-- Community Information -->
           <div v-if="communityContactData" class="mb-4">
-            <h3 class="text-uppercase fw-semibold mb-3 wcmc-contact-title">{{ communityContactData.name || t('communityName') }}</h3>
+            <h3 class="text-uppercase fw-semibold mb-3 wcmc-contact-title">{{ communityContactData.name ||
+              t('communityName') }}</h3>
             <div class="d-flex flex-column gap-2">
               <div v-if="communityContactData.address" class="small">
                 <span class="text-uppercase fw-semibold d-block mb-1">{{ t('address') }}</span>
@@ -865,11 +857,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               </div>
               <div v-if="communityContactData.phone" class="small">
                 <span class="text-uppercase fw-semibold d-block mb-1">{{ t('phone') }}</span>
-                <a :href="`tel:${communityContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ communityContactData.phone }}</a>
+                <a :href="`tel:${communityContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{
+                  communityContactData.phone }}</a>
               </div>
               <div v-if="communityContactData.website" class="small">
                 <span class="text-uppercase fw-semibold d-block mb-1">{{ t('website') }}</span>
-                <a :href="communityContactData.website" target="_blank" class="wcmc-detail-link text-decoration-underline text-break">{{ communityContactData.website }}</a>
+                <a :href="communityContactData.website" target="_blank"
+                  class="wcmc-detail-link text-decoration-underline text-break">{{ communityContactData.website }}</a>
               </div>
               <div v-if="communityContactData.pec" class="small">
                 <span class="text-uppercase fw-semibold d-block mb-1">PEC</span>
@@ -888,16 +882,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               </div>
               <div v-if="referentContactData.phone" class="small">
                 <span class="text-uppercase fw-semibold d-block mb-1">{{ t('phone') }}</span>
-                <a :href="`tel:${referentContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{ referentContactData.phone }}</a>
+                <a :href="`tel:${referentContactData.phone}`" class="wcmc-detail-link text-decoration-underline">{{
+                  referentContactData.phone }}</a>
               </div>
               <div v-if="referentContactData.email" class="small">
                 <span class="text-uppercase fw-semibold d-block mb-1">{{ t('email') }}</span>
-                <a :href="`mailto:${referentContactData.email}`" class="wcmc-detail-link text-decoration-underline text-break">{{ referentContactData.email }}</a>
+                <a :href="`mailto:${referentContactData.email}`"
+                  class="wcmc-detail-link text-decoration-underline text-break">{{ referentContactData.email }}</a>
               </div>
             </div>
           </div>
 
-          
+
         </div>
       </div>
 
@@ -915,11 +911,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </button>
 
         <!-- Previous Button -->
-        <button 
-          v-if="validCarouselImages.length > 1"
-          class="wcmc-lightbox-nav wcmc-lightbox-prev" 
-          @click.stop="prevLightboxImage"
-          aria-label="Previous image">
+        <button v-if="validCarouselImages.length > 1" class="wcmc-lightbox-nav wcmc-lightbox-prev"
+          @click.stop="prevLightboxImage" aria-label="Previous image">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
@@ -927,20 +920,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
         <!-- Image -->
         <div class="wcmc-lightbox-image-wrapper">
-          <img 
-            v-if="currentLightboxImage"
-            :src="currentLightboxImage" 
-            :alt="`${item.title} - Image ${lightboxIndex + 1}`"
-            class="wcmc-lightbox-image"
+          <img v-if="currentLightboxImage" :src="currentLightboxImage"
+            :alt="`${item.title} - Image ${lightboxIndex + 1}`" class="wcmc-lightbox-image"
             @error="handleImageError($event, currentLightboxImage)" />
         </div>
 
         <!-- Next Button -->
-        <button 
-          v-if="validCarouselImages.length > 1"
-          class="wcmc-lightbox-nav wcmc-lightbox-next" 
-          @click.stop="nextLightboxImage"
-          aria-label="Next image">
+        <button v-if="validCarouselImages.length > 1" class="wcmc-lightbox-nav wcmc-lightbox-next"
+          @click.stop="nextLightboxImage" aria-label="Next image">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
@@ -960,7 +947,6 @@ import { normalizeOdhItem, getExhibitors, getFrequency, getOpeningHours, getFull
 import SkeletonList from '../components/SkeletonList.vue';
 import ErrorAlert from '../components/ErrorAlert.vue';
 import ItemCard from '../components/ItemCard.vue';
-import { loadExternalScriptOnce } from '../../utils/loadExternalScriptOnce';
 import { Carousel } from 'bootstrap';
 import orderDarkSvg from '../svgs/order_dark.svg';
 import orderLightSvg from '../svgs/order_light.svg';
@@ -1121,8 +1107,6 @@ export default {
   },
   data() {
     return {
-      scriptReady: false,
-      embedError: '',
       exhibitorSearchQuery: '',
       exhibitorCategoryFilters: [], // Changed from string to array
       isCategoryDropdownOpen: false,
@@ -1258,12 +1242,12 @@ export default {
         // Fallback to original getFullAddress if LocationInfo not available
         return this.raw ? getFullAddress(this.raw, this.lang) : null;
       }
-      
+
       // Get location name from TvInfo.Name (e.g., "Bolzano")
       const locationName = pickLang(this.raw.LocationInfo?.TvInfo?.Name, this.lang);
       // Get district name from DistrictInfo.Name (e.g., "Don Bosco")
       const districtName = pickLang(this.raw.LocationInfo?.DistrictInfo?.Name, this.lang);
-      
+
       if (locationName && districtName) {
         return `${locationName}, ${districtName}`;
       }
@@ -1273,7 +1257,7 @@ export default {
       if (districtName) {
         return districtName;
       }
-      
+
       // Fallback to original getFullAddress if LocationInfo/DistrictInfo not available
       return this.raw ? getFullAddress(this.raw, this.lang) : null;
     },
@@ -1386,7 +1370,7 @@ export default {
     },
     exhibitors() {
       const realExhibitors = this.raw ? getExhibitors(this.raw) : [];
-      
+
       // Return fake data for testing if no real exhibitors or USE_MOCK_DATA is true
       if (USE_MOCK_DATA || realExhibitors.length === 0) {
         return [
@@ -1497,7 +1481,7 @@ export default {
           }
         ];
       }
-      
+
       return realExhibitors;
     },
     availableExhibitorCategories() {
@@ -1512,18 +1496,18 @@ export default {
         return this.availableExhibitorCategories;
       }
       const query = this.categorySearchQuery.trim().toLowerCase();
-      return this.availableExhibitorCategories.filter(cat => 
+      return this.availableExhibitorCategories.filter(cat =>
         cat.toLowerCase().includes(query)
       );
     },
     filteredExhibitors() {
       let filtered = this.exhibitors;
-      
+
       // Category filter
       if (this.exhibitorCategoryFilters.length > 0) {
         filtered = filtered.filter(ex => this.exhibitorCategoryFilters.includes(ex.category));
       }
-      
+
       // Search filter
       if (this.exhibitorSearchQuery.trim()) {
         const query = this.exhibitorSearchQuery.toLowerCase();
@@ -1536,7 +1520,7 @@ export default {
           );
         });
       }
-      
+
       return filtered;
     },
     sortedAndFilteredExhibitors() {
@@ -1641,7 +1625,7 @@ export default {
           };
         }
       }
-      
+
       // Fallback to raw ContactInfos
       if (!this.raw) return null;
       const ci = pickLang(this.raw?.ContactInfos, this.lang);
@@ -1657,7 +1641,7 @@ export default {
     },
     communityContactData() {
       if (!this.raw || !this.communityInfo) return null;
-      
+
       // Build address from TourismAssociation if available
       let address = this.fullAddress;
       if (this.contactInfo?.address) {
@@ -1666,7 +1650,7 @@ export default {
         if (this.contactInfo.city) parts.push(this.contactInfo.city);
         address = parts.join(', ');
       }
-      
+
       return {
         name: this.communityInfo.name || this.item?.municipality || null,
         address: address || null,
@@ -1702,11 +1686,11 @@ export default {
     },
     mapMarkerColor() {
       // Get the appropriate marker color based on data type (fair or market)
-      const cssVarName = this.dataType === 'market' 
-        ? '--color-indicator-position-markets-map' 
+      const cssVarName = this.dataType === 'market'
+        ? '--color-indicator-position-markets-map'
         : '--color-indicator-position-fairs-map';
       const fallback = this.dataType === 'market' ? '#F39650' : '#024C96';
-      
+
       try {
         // CSS variables are set on .wcmc-root in shadow DOM
         const rootEl = document.querySelector('webcomp-market-calendar')?.shadowRoot?.querySelector('.wcmc-root');
@@ -1728,7 +1712,7 @@ export default {
     },
     mapIframeUrl() {
       if (!this.mapCoords) return null;
-      
+
       // Helper function to escape HTML attribute values
       const escapeHtmlAttr = (str) => {
         if (!str) return '';
@@ -1739,22 +1723,38 @@ export default {
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
       };
-      
+
       // Build the web component HTML with attributes
-      const categoryFilter = ['essen trinken', 'mobilität'].join(',');
+
+      // Use tags from store (Tag/poi API) or fallback to default
+      const tags = this.store.state.filterMetadata.tags;
+      let categoryFilter = 'essen trinken,mobilität'; // fallback
+
+      if (tags && tags.length > 0) {
+        // Filter out "POI" if it's there as it might be a general tag not suitable for specific filtering
+        const validTags = tags.filter(t => t.Id !== 'POI').map(t => t.Id);
+        if (validTags.length > 0) {
+          categoryFilter = validTags.join(',');
+        }
+      }
+
       const language = this.config.language || 'it';
       const lat = String(this.mapCoords.lat);
       const lon = String(this.mapCoords.lon);
       const radius = '10000';
       const zoom = String(this.fairsMapZoom || 15);
       const markerColor = this.mapMarkerColor || '#024C96';
-      
+
+      // Pass the API base URL and origin to ensure the component uses the correct environment and tracking
+      const apiBaseUrl = this.config.apiBase || 'https://tourism.api.opendatahub.testingmachine.eu';
+      const origin = 'webcomp-market-calendar';
+
       // Build the web component tag as HTML string with properly escaped attributes
-      const componentHtml = `<odh-activity-poi category-filter="${escapeHtmlAttr(categoryFilter)}" directions="" language="${escapeHtmlAttr(language)}" lat="${escapeHtmlAttr(lat)}" lon="${escapeHtmlAttr(lon)}" radius="${escapeHtmlAttr(radius)}" show-current-location="true" showradius="false" zoom="${escapeHtmlAttr(zoom)}" marker-color="${escapeHtmlAttr(markerColor)}"></odh-activity-poi>\n`;
-      
+      const componentHtml = `<odh-activity-poi base-url="${escapeHtmlAttr(apiBaseUrl)}" origin="${escapeHtmlAttr(origin)}" category-filter="${escapeHtmlAttr(categoryFilter)}" directions="" language="${escapeHtmlAttr(language)}" lat="${escapeHtmlAttr(lat)}" lon="${escapeHtmlAttr(lon)}" radius="${escapeHtmlAttr(radius)}" show-current-location="true" showradius="false" zoom="${escapeHtmlAttr(zoom)}" marker-color="${escapeHtmlAttr(markerColor)}"></odh-activity-poi>\n`;
+
       // Base64 encode the HTML
       const base64Attribs = btoa(unescape(encodeURIComponent(componentHtml)));
-      
+
       // Build the iframe URL
       const baseUrl = 'https://api.webcomponents.opendatahub.com/preview/0e5fbede-4a21-4dd3-bf85-7d2be71dfb12/latest';
       return `${baseUrl}?attribs=${encodeURIComponent(base64Attribs)}`;
@@ -1772,21 +1772,6 @@ export default {
     },
     exhibitorCategoryFilter() {
       this.exhibitorsPage = 1;
-    },
-    coords: {
-      immediate: true,
-      async handler() {
-        await this.ensureEmbedLoaded();
-      },
-    },
-    mapCoords: {
-      immediate: true,
-      async handler() {
-        await this.ensureEmbedLoaded();
-      },
-    },
-    scriptReady(newVal) {
-      // Component handles its own styling now
     },
   },
   async mounted() {
@@ -1895,13 +1880,13 @@ export default {
         const detail = await this.store.fetchDetailById(this.id);
         if (detail) {
           this.detailItem = detail;
-          
+
           // Fetch TourismAssociation data if available
           const tvInfoSelf = detail?.LocationInfo?.TvInfo?.Self;
           if (tvInfoSelf) {
             await this.loadTourismAssociation(tvInfoSelf);
           }
-          
+
           // Fetch DistrictInfo data if available to get coordinates
           const districtSelf = detail?.LocationInfo?.DistrictInfo?.Self;
           if (districtSelf) {
@@ -1922,7 +1907,7 @@ export default {
         // URL format: https://tourism.api.opendatahub.testingmachine.eu/v1/District/{ID}
         const urlParts = selfUrl.split('/');
         const districtId = urlParts[urlParts.length - 1];
-        
+
         if (districtId) {
           const data = await this.store.fetchDistrict(districtId, {
             language: this.config.language,
@@ -1950,20 +1935,7 @@ export default {
         this.loadingTourismAssociation = false;
       }
     },
-    async ensureEmbedLoaded() {
-      if (!this.mapCoords) return;
-      if (this.scriptReady) return;
-      try {
-        this.embedError = '';
-        await loadExternalScriptOnce({
-          id: 'odh-activity-poi-bundle',
-          src: 'https://cdn.webcomponents.opendatahub.com/dist/0e5fbede-4a21-4dd3-bf85-7d2be71dfb12/bundle.js',
-        });
-        this.scriptReady = true;
-      } catch (e) {
-        this.embedError = e?.message || String(e);
-      }
-    },
+
     navigateToLocation() {
       if (!this.mapCoords) return;
       const url = `https://www.google.com/maps?q=${this.mapCoords.lat},${this.mapCoords.lon}`;
@@ -2000,7 +1972,7 @@ export default {
       URL.revokeObjectURL(url);
     },
     handleContactSubmit() {
-      
+
     },
     contactReferent() {
       if (this.referentContactData?.email) {
@@ -2066,7 +2038,7 @@ export default {
     },
     async fetchSimilarFairs() {
       if (!this.currentFairTags.length) return;
-      
+
       this.loadingSimilar = true;
       try {
         // Use first tag as filter (can be enhanced to use multiple)
@@ -2077,7 +2049,7 @@ export default {
           excludeId: this.id,
           maxResults: 50, // Fetch up to 50 similar items
         });
-        this.similarFairs = items.map(item => 
+        this.similarFairs = items.map(item =>
           normalizeOdhItem(item, { lang: this.lang, type: this.dataType })
         );
       } catch (e) {
@@ -2088,7 +2060,7 @@ export default {
     },
     async fetchNearbyFairs() {
       if (!this.item?.municipalityId) return;
-      
+
       this.loadingNearby = true;
       try {
         const locfilter = `mun${this.item.municipalityId}`;
@@ -2098,7 +2070,7 @@ export default {
           excludeId: this.id,
           maxResults: 50, // Fetch up to 50 nearby items
         });
-        this.nearbyFairs = items.map(item => 
+        this.nearbyFairs = items.map(item =>
           normalizeOdhItem(item, { lang: this.lang, type: this.dataType })
         );
       } catch (e) {
@@ -2109,7 +2081,7 @@ export default {
     },
     slideLeft() {
       if (this.isSliding) return;
-      
+
       const track = this.$refs.sliderTrack;
       if (track) {
         // Get the first card wrapper div to calculate its width including gap
@@ -2118,10 +2090,10 @@ export default {
           const cardWidth = cardWrapper.offsetWidth;
           const gap = 24; // 1.5rem = 24px (from gap-4 in CSS)
           const scrollDistance = cardWidth + gap;
-          
+
           this.isSliding = true;
           track.scrollBy({ left: -scrollDistance, behavior: 'smooth' });
-          
+
           // Re-enable after scroll animation completes (smooth scroll typically takes ~500ms)
           this.resetSlidingState();
         } else {
@@ -2134,7 +2106,7 @@ export default {
     },
     slideRight() {
       if (this.isSliding) return;
-      
+
       const track = this.$refs.sliderTrack;
       if (track) {
         // Get the first card wrapper div to calculate its width including gap
@@ -2143,10 +2115,10 @@ export default {
           const cardWidth = cardWrapper.offsetWidth;
           const gap = 24; // 1.5rem = 24px (from gap-4 in CSS)
           const scrollDistance = cardWidth + gap;
-          
+
           this.isSliding = true;
           track.scrollBy({ left: scrollDistance, behavior: 'smooth' });
-          
+
           // Re-enable after scroll animation completes (smooth scroll typically takes ~500ms)
           this.resetSlidingState();
         } else {
@@ -2172,7 +2144,10 @@ export default {
       this.currentThumbnailPage = 0;
       this.activeSlideIndex = 0;
       this.imageErrors = {}; // Reset image errors when loading new data
-      
+
+      // Ensure filter metadata (categories) is loaded for the map
+      await this.store.ensureFilterMetadataLoaded();
+
       // First, try to fetch full detail from single-item endpoint
       await this.loadDetailData();
 
@@ -2180,8 +2155,6 @@ export default {
       if (!this.raw) {
         await this.store.ensureLoaded(this.dataType, this.config.pageSize || 20);
       }
-
-      await this.ensureEmbedLoaded();
 
       // Fetch similar and nearby fairs
       await Promise.all([
@@ -2238,7 +2211,7 @@ export default {
     },
     handleLightboxKeydown(event) {
       if (!this.lightboxOpen) return;
-      
+
       switch (event.key) {
         case 'Escape':
           this.closeLightbox();

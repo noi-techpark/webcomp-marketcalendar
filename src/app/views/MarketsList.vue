@@ -5,265 +5,428 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 <template>
-  <div>
-    <!-- Breadcrumb -->
+  <div class="wcmc-markets-list">
+    <!-- Mobile: All controls -->
+    <div class="d-md-none">
+      <!-- Title + Filter Badge -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="wcmc-page-title wcmc-page-title-large mb-0">{{ t('markets') }}</h2>
+        <button type="button"
+          class="btn bg-transparent rounded position-relative d-flex align-items-center justify-content-center wcmc-mobile-filter-button-theme flex-shrink-0"
+          @click="mobileFilterVisible = true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M3.792 2.938A49.069 49.069 0 0 1 12 2.25c2.797 0 5.54.236 8.209.688a1.857 1.857 0 0 1 1.541 1.836v1.044a3 3 0 0 1-.879 2.121l-6.182 6.182a1.5 1.5 0 0 0-.439 1.061v2.927a3 3 0 0 1-1.658 2.684l-1.757.878A.75.75 0 0 1 9.75 21v-5.818a1.5 1.5 0 0 0-.44-1.06L3.13 7.938a3 3 0 0 1-.879-2.121V4.774c0-.897.64-1.683 1.542-1.836Z"
+              clip-rule="evenodd" />
+          </svg>
+          <span v-if="activeFilterCount > 0"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill wcmc-filter-badge-theme">{{
+            activeFilterCount }}</span>
+        </button>
+      </div>
+
+      <!-- Reset button -->
+      <div class="d-flex gap-2 mb-3 align-items-center">
+        <button type="button" class="btn btn-primary flex-fill" @click="clearAllFilters">
+          {{ t('resetFilters') }}
+        </button>
+      </div>
 
 
-      <!-- Mobile: All controls -->
-      <div class="d-md-none">
-        <!-- Title + Filter Badge -->
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h2 class="wcmc-page-title wcmc-page-title-large mb-0">{{ t('markets') }}</h2>
-          <button
-            type="button"
-            class="btn bg-transparent rounded position-relative d-flex align-items-center justify-content-center wcmc-mobile-filter-button-theme flex-shrink-0"
-            @click="mobileFilterVisible = true"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path fill-rule="evenodd" d="M3.792 2.938A49.069 49.069 0 0 1 12 2.25c2.797 0 5.54.236 8.209.688a1.857 1.857 0 0 1 1.541 1.836v1.044a3 3 0 0 1-.879 2.121l-6.182 6.182a1.5 1.5 0 0 0-.439 1.061v2.927a3 3 0 0 1-1.658 2.684l-1.757.878A.75.75 0 0 1 9.75 21v-5.818a1.5 1.5 0 0 0-.44-1.06L3.13 7.938a3 3 0 0 1-.879-2.121V4.774c0-.897.64-1.683 1.542-1.836Z" clip-rule="evenodd"/>
+      <!-- Preset buttons row -->
+      <div class="d-flex gap-2 mb-3">
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === 'today' }" @click="setPresetToday">
+          {{ t('today') }}
+        </button>
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === '7days' }" @click="setPreset7Days">
+          {{ t('sevenDays') }}
+        </button>
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === 'month' }" @click="setPresetMonth">
+          {{ t('month') }}
+        </button>
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green wcmc-quick-filter-base flex-fill"
+          :class="{ 'active': activePreset === 'year' }" @click="setPresetYear">
+          {{ t('year') }}
+        </button>
+      </div>
+
+      <!-- Date range inputs row -->
+      <div class="d-flex gap-2 mb-3">
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-flex-grow-min"
+          @touchstart.prevent="handleDateTouchMobileFrom">
+          <input id="wcmc-date-selector-from-mobile" name="date-selector-from-mobile" type="text"
+            class="wcmc-date-selector wcmc-input-base wcmc-pointer-events-none form-control fst-italic w-100"
+            :placeholder="t('selectStartDate')" :value="formattedDateFrom" readonly />
+          <input type="date" class="wcmc-date-input-overlay" :value="dateRange.from" @change="onDateFromChange"
+            ref="dateInputMobileFrom" />
+          <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="18" height="18"
+            viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none;">
+            <path
+              d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+          </svg>
+        </div>
+
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-flex-grow-min"
+          @touchstart.prevent="handleDateTouchMobileTo">
+          <input id="wcmc-date-selector-to-mobile" name="date-selector-to-mobile" type="text"
+            class="wcmc-date-selector wcmc-input-base wcmc-pointer-events-none form-control fst-italic w-100"
+            :placeholder="t('selectEndDate')" :value="formattedDateTo" readonly />
+          <input type="date" class="wcmc-date-input-overlay" :value="dateRange.to" @change="onDateToChange"
+            ref="dateInputMobileTo" />
+          <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="18" height="18"
+            viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none;">
+            <path
+              d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Show past toggle + Reset button -->
+      <div class="d-flex gap-2 mb-3 align-items-center">
+        <div class="d-flex align-items-center gap-2 flex-fill">
+          <label class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" :checked="filters.showPast"
+              :disabled="ds.loading" @change="filters.showPast = $event.target.checked" />
+            <span class="form-check-label small">{{ t('showPast') }}</span>
+          </label>
+        </div>
+        <button type="button" class="btn btn-primary flex-fill" @click="clearAllFilters">
+          {{ t('resetFilters') }}
+        </button>
+      </div>
+
+      <!-- Search bar row -->
+      <div class="d-flex gap-2 mb-3">
+        <div class="wcmc-search-wrapper w-100">
+          <div class="wcmc-search-box position-relative d-flex align-items-center">
+            <input id="wcmc-search-input-mobile" name="search-mobile" type="search"
+              class="wcmc-search-input wcmc-input-base form-control w-100" :placeholder="t('search')"
+              :value="searchBuffer" @input="searchBuffer = $event.target.value" @keydown.enter="applySearch" />
+            <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="18" height="18" viewBox="0 0 24 24"
+              fill="currentColor" style="cursor: pointer;" @click="applySearch">
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
             </svg>
-            <span v-if="activeFilterCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill wcmc-filter-badge-theme">{{ activeFilterCount }}</span>
-          </button>
+          </div>
         </div>
-        
-        <!-- Reset button -->
-        <div class="d-flex gap-2 mb-3 align-items-center">
-          <button
-            type="button"
-            class="btn btn-primary flex-fill"
-            @click="clearAllFilters"
-          >
-            {{ t('resetFilters') }}
-          </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-none d-md-flex flex-column gap-3 mb-3">
+    <div class="d-flex align-items-center justify-content-between">
+      <h2 class="wcmc-page-title mb-0">{{ t('markets') }}</h2>
+
+      <!-- Header row: Preset buttons + Date range + Show past + Search -->
+      <div class="d-flex align-items-center gap-3 ms-md-auto flex-wrap justify-content-end">
+        <!-- Preset buttons -->
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green"
+          :class="{ 'active': activePreset === 'today' }" @click="setPresetToday">
+          {{ t('today') }}
+        </button>
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green"
+          :class="{ 'active': activePreset === '7days' }" @click="setPreset7Days">
+          {{ t('sevenDays') }}
+        </button>
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green"
+          :class="{ 'active': activePreset === 'month' }" @click="setPresetMonth">
+          {{ t('month') }}
+        </button>
+        <button type="button" class="btn wcmc-quick-filter wcmc-quick-filter--green"
+          :class="{ 'active': activePreset === 'year' }" @click="setPresetYear">
+          {{ t('year') }}
+        </button>
+
+        <!-- Date range inputs -->
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-cursor-pointer" @click="openDatePickerFrom">
+          <input id="wcmc-date-selector-from" name="date-selector-from" type="text"
+            class="wcmc-date-selector form-control fst-italic" :placeholder="t('selectStartDate')"
+            :value="formattedDateFrom" readonly @click="openDatePickerFrom" ref="dateDisplayFrom" />
+          <input type="date" class="position-absolute top-0 start-0 w-100 h-100 opacity-0 wcmc-cursor-pointer"
+            style="z-index: 10;" :value="dateRange.from" @change="onDateFromChange" ref="dateInputFrom" tabindex="-1" />
+          <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="16" height="16"
+            viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none; z-index: 2;">
+            <path
+              d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+          </svg>
         </div>
-        
-        <!-- Search bar row -->
-        <div class="d-flex gap-2 mb-3">
-          <div class="wcmc-search-wrapper w-100">
+
+        <div class="wcmc-date-selector-wrapper position-relative wcmc-cursor-pointer" @click="openDatePickerTo">
+          <input id="wcmc-date-selector-to" name="date-selector-to" type="text"
+            class="wcmc-date-selector form-control fst-italic" :placeholder="t('selectEndDate')"
+            :value="formattedDateTo" readonly @click="openDatePickerTo" ref="dateDisplayTo" />
+          <input type="date" class="position-absolute top-0 start-0 w-100 h-100 opacity-0 wcmc-cursor-pointer"
+            style="z-index: 10;" :value="dateRange.to" @change="onDateToChange" ref="dateInputTo" tabindex="-1" />
+          <svg class="wcmc-date-selector-icon position-absolute wcmc-icon-centered" width="16" height="16"
+            viewBox="0 0 24 24" fill="currentColor" style="right: 12px; pointer-events: none; z-index: 2;">
+            <path
+              d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+          </svg>
+        </div>
+
+        <!-- Show past toggle -->
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" :checked="filters.showPast"
+              :disabled="ds.loading" @change="filters.showPast = $event.target.checked" />
+            <span class="form-check-label small">{{ t('showPast') }}</span>
+          </label>
+        </div>
+
+        <!-- Search box + Reset button -->
+        <div class="d-flex align-items-center gap-2">
+          <div class="wcmc-search-wrapper">
             <div class="wcmc-search-box position-relative d-flex align-items-center">
-              <input
-                id="wcmc-search-input-mobile"
-                name="search-mobile"
-                type="search"
-                class="wcmc-search-input wcmc-input-base form-control w-100"
-                :placeholder="t('search')"
-                :value="query"
-                @input="query = $event.target.value"
-              />
-              <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              <input id="wcmc-search-input" name="search" type="search" class="wcmc-search-input form-control"
+                :placeholder="t('search')" :value="searchBuffer" @input="searchBuffer = $event.target.value"
+                @keydown.enter="applySearch" />
+              <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="16" height="17" viewBox="0 0 24 24"
+                fill="currentColor" style="cursor: pointer;" @click="applySearch">
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
               </svg>
             </div>
           </div>
+          <button type="button" class="btn btn-sm btn-primary wcmc-hide-above-1024" @click="clearAllFilters">
+            {{ t('resetFilters') }}
+          </button>
         </div>
       </div>
-
-      <!-- Desktop: Title + Controls Row -->
-      <div class="d-none d-md-flex flex-column flex-md-row gap-3 align-items-md-center justify-content-between mb-3">
-        <h2 class="wcmc-page-title mb-0">{{ t('markets') }}</h2>
-        
-        <div class="d-flex align-items-center gap-3 ms-md-auto flex-wrap">
-          <!-- Search box + Reset button -->
-          <div class="d-flex align-items-center gap-2">
-            <div class="wcmc-search-wrapper">
-              <div class="wcmc-search-box position-relative d-flex align-items-center">
-                <input
-                  id="wcmc-search-input"
-                  name="search"
-                  type="search"
-                  class="wcmc-search-input form-control"
-                  :placeholder="t('search')"
-                  :value="query"
-                  @input="query = $event.target.value"
-                />
-                <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="16" height="17" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                </svg>
-              </div>
-            </div>
-            <button
-              type="button"
-              class="btn btn-sm btn-primary wcmc-hide-above-1024"
-              @click="clearAllFilters"
-            >
-              {{ t('resetFilters') }}
-            </button>
-          </div>
-        </div>
-      </div>
+    </div>
 
     <!-- Filter bar (Desktop only) -->
     <div v-if="filterVisible" class="wcmc-filter-bar mb-4 p-4 px-5 rounded d-none d-md-block">
       <div class="wcmc-filter-dropdowns d-flex flex-wrap gap-4 gap-md-5">
         <!-- Weekday Filter -->
-        <div class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0" ref="weekdayFilter">
+        <div
+          class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0"
+          ref="weekdayFilter">
           <label class="wcmc-filter-label fw-medium text-uppercase">{{ t('weekday') }}</label>
-          <div 
-            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between" 
-            @click.stop="toggleDropdown('weekday')"
-          >
+          <div
+            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between"
+            @click.stop="toggleDropdown('weekday')">
             <span class="flex-grow-1 text-start text-truncate me-2">{{ weekdayDisplayText }}</span>
-            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" :style="{ transform: dropdownOpen.weekday ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
-              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none"
+              stroke="currentColor"
+              :style="{ transform: dropdownOpen.weekday ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
+              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          
-          <div v-show="dropdownOpen.weekday" class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1" @click.stop>
-            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleWeekday('all')">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.weekday.length === 0" readonly>
+
+          <div v-show="dropdownOpen.weekday"
+            class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
+            @click.stop>
+            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleWeekday('all')">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.weekday.length === 0" readonly>
               <span class="small">{{ t('allDays') }}</span>
             </div>
-            <div v-for="dayOption in filteredWeekdayOptions" :key="dayOption.idx" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleWeekday(dayOption.idx)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.weekday.includes(dayOption.idx)" readonly>
+            <div v-for="dayOption in filteredWeekdayOptions" :key="dayOption.idx"
+              class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleWeekday(dayOption.idx)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.weekday.includes(dayOption.idx)" readonly>
               <span class="small">{{ dayOption.label }}</span>
             </div>
           </div>
         </div>
 
         <!-- Zone Filter -->
-        <div class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0" ref="zoneFilter">
+        <div
+          class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0"
+          ref="zoneFilter">
           <label class="wcmc-filter-label fw-medium text-uppercase">{{ t('zone') }}</label>
-          <div 
-            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between" 
-            @click.stop="toggleDropdown('zone')"
-          >
+          <div
+            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between"
+            @click.stop="toggleDropdown('zone')">
             <span class="flex-grow-1 text-start text-truncate me-2">{{ zoneDisplayText }}</span>
-            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" :style="{ transform: dropdownOpen.zone ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
-              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none"
+              stroke="currentColor"
+              :style="{ transform: dropdownOpen.zone ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
+              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          
-          <div v-show="dropdownOpen.zone" class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1" @click.stop>
+
+          <div v-show="dropdownOpen.zone"
+            class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
+            @click.stop>
             <!-- Search input for zones -->
             <div class="mb-2">
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                :placeholder="t('search')"
-                :value="zoneSearchQuery"
-                @input="zoneSearchQuery = $event.target.value"
-                @click.stop
-              />
+              <input type="text" class="form-control form-control-sm" :placeholder="t('search')"
+                :value="zoneSearchQuery" @input="zoneSearchQuery = $event.target.value" @click.stop />
             </div>
-            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleZone('all')">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.zone.length === 0" readonly>
+            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleZone('all')">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.zone.length === 0" readonly>
               <span class="small">{{ t('allLocations') }}</span>
             </div>
-            <div v-for="zone in filteredZonesForSearch" :key="zone" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleZone(zone)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.zone.includes(zone)" readonly>
+            <div v-for="zone in filteredZonesForSearch" :key="zone"
+              class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleZone(zone)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.zone.includes(zone)" readonly>
               <span class="small">{{ zone }}</span>
             </div>
-            <div v-if="filteredZonesForSearch.length === 0 && zoneSearchQuery.trim()" class="text-muted text-center p-2 small">
+            <div v-if="filteredZonesForSearch.length === 0 && zoneSearchQuery.trim()"
+              class="text-muted text-center p-2 small">
               {{ t('noResults') }}
             </div>
           </div>
         </div>
 
         <!-- Frequency Filter -->
-        <div class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0" ref="frequencyFilter">
+        <div
+          class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0"
+          ref="frequencyFilter">
           <label class="wcmc-filter-label fw-medium text-uppercase">{{ t('frequency') }}</label>
-          <div 
-            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between" 
-            @click.stop="toggleDropdown('frequency')"
-          >
+          <div
+            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between"
+            @click.stop="toggleDropdown('frequency')">
             <span class="flex-grow-1 text-start text-truncate me-2">{{ frequencyDisplayText }}</span>
-            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" :style="{ transform: dropdownOpen.frequency ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
-              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none"
+              stroke="currentColor"
+              :style="{ transform: dropdownOpen.frequency ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
+              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          
-          <div v-show="dropdownOpen.frequency" class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1" @click.stop>
-            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleFrequency('all')">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.frequency.length === 0" readonly>
+
+          <div v-show="dropdownOpen.frequency"
+            class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
+            @click.stop>
+            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleFrequency('all')">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.frequency.length === 0" readonly>
               <span class="small">{{ t('allFrequencies') }}</span>
             </div>
-            <div v-for="freq in availableFrequencies" :key="freq" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleFrequency(freq)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.frequency.includes(freq)" readonly>
+            <div v-for="freq in availableFrequencies" :key="freq"
+              class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleFrequency(freq)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.frequency.includes(freq)" readonly>
               <span class="small">{{ freq }}</span>
             </div>
           </div>
         </div>
 
         <!-- Period Filter -->
-        <div class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0" ref="periodFilter">
+        <div
+          class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0"
+          ref="periodFilter">
           <label class="wcmc-filter-label fw-medium text-uppercase">{{ t('period') }}</label>
-          <div 
-            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between" 
-            @click.stop="toggleDropdown('period')"
-          >
+          <div
+            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between"
+            @click.stop="toggleDropdown('period')">
             <span class="flex-grow-1 text-start text-truncate me-2">{{ periodDisplayText }}</span>
-            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" :style="{ transform: dropdownOpen.period ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
-              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none"
+              stroke="currentColor"
+              :style="{ transform: dropdownOpen.period ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
+              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          
-          <div v-show="dropdownOpen.period" class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1" @click.stop>
-            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="togglePeriod('all')">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.period.length === 0" readonly>
+
+          <div v-show="dropdownOpen.period"
+            class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
+            @click.stop>
+            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="togglePeriod('all')">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.period.length === 0" readonly>
               <span class="small">{{ t('allPeriods') }}</span>
             </div>
-            <div v-for="monthOption in filteredMonthOptions" :key="monthOption.idx" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="togglePeriod(monthOption.idx)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.period.includes(monthOption.idx)" readonly>
+            <div v-for="monthOption in filteredMonthOptions" :key="monthOption.idx"
+              class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="togglePeriod(monthOption.idx)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.period.includes(monthOption.idx)" readonly>
               <span class="small">{{ monthOption.label }}</span>
             </div>
           </div>
         </div>
 
         <!-- Category Filter -->
-        <div class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0" ref="categoryFilter">
+        <div
+          class="wcmc-filter-group wcmc-filter-group-base position-relative d-flex flex-column gap-1 flex-fill min-w-0"
+          ref="categoryFilter">
           <label class="wcmc-filter-label fw-medium text-uppercase">{{ t('category') }}</label>
-          <div 
-            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between" 
-            @click.stop="toggleDropdown('category')"
-          >
+          <div
+            class="wcmc-filter-select wcmc-filter-select-base form-select d-flex align-items-center justify-content-between"
+            @click.stop="toggleDropdown('category')">
             <span class="flex-grow-1 text-start text-truncate me-2">{{ categoryDisplayText }}</span>
-            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" :style="{ transform: dropdownOpen.category ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
-              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg class="wcmc-filter-chevron flex-shrink-0" width="10" height="6" viewBox="0 0 10 6" fill="none"
+              stroke="currentColor"
+              :style="{ transform: dropdownOpen.category ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }">
+              <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          
-          <div v-show="dropdownOpen.category" class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1" @click.stop>
+
+          <div v-show="dropdownOpen.category"
+            class="wcmc-dropdown-menu wcmc-dropdown-menu-base shadow rounded position-absolute w-100 p-2 mt-1"
+            @click.stop>
             <!-- Search input for categories -->
             <div class="mb-2">
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                :placeholder="t('search')"
-                :value="categorySearchQuery"
-                @input="categorySearchQuery = $event.target.value"
-                @click.stop
-              />
+              <input type="text" class="form-control form-control-sm" :placeholder="t('search')"
+                :value="categorySearchQuery" @input="categorySearchQuery = $event.target.value" @click.stop />
             </div>
-            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleCategory('all')">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.length === 0" readonly>
+            <div class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleCategory('all')">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.category.length === 0" readonly>
               <span class="small">{{ t('allCategories') }}</span>
             </div>
-            <div v-for="cat in filteredCategoriesForSearch" :key="cat.Id" class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2" @click="toggleCategory(cat.Id)">
-              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none" :checked="filters.category.includes(cat.Id)" readonly>
+            <div v-for="cat in filteredCategoriesForSearch" :key="cat.Id"
+              class="wcmc-dropdown-item wcmc-cursor-pointer p-2 rounded mb-1 d-flex align-items-center gap-2"
+              @click="toggleCategory(cat.Id)">
+              <input type="checkbox" class="form-check-input mt-0 wcmc-pointer-events-none"
+                :checked="filters.category.includes(cat.Id)" readonly>
               <span class="small">{{ cat.Name }}</span>
             </div>
-            <div v-if="filteredCategoriesForSearch.length === 0 && categorySearchQuery.trim()" class="text-muted text-center p-2 small">
+            <div v-if="filteredCategoriesForSearch.length === 0 && categorySearchQuery.trim()"
+              class="text-muted text-center p-2 small">
               {{ t('noResults') }}
             </div>
           </div>
         </div>
       </div>
-      
+
       <!-- Active filter tags (Desktop) -->
-      <div v-if="activeFilterTags.length > 0" class="wcmc-filter-tags d-none d-md-flex flex-wrap gap-2 align-items-center justify-content-between mt-4 pt-4 border-top">
+      <div v-if="activeFilterTags.length > 0 || dateRange.from || dateRange.to || filters.showPast"
+        class="wcmc-filter-tags d-none d-md-flex flex-wrap gap-2 align-items-center justify-content-between mt-4 pt-4 border-top">
         <div class="d-flex flex-wrap gap-2">
-          <span v-for="tag in activeFilterTags" :key="tag.type + tag.value" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded" @click="tag.type === 'weekday' ? toggleWeekday(tag.value) : tag.type === 'zone' ? toggleZone(tag.value) : tag.type === 'frequency' ? toggleFrequency(tag.value) : tag.type === 'period' ? togglePeriod(tag.value) : toggleCategory(tag.value)">
+          <span v-if="dateRange.from || dateRange.to"
+            class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded"
+            @click="dateRange.from = ''; dateRange.to = ''; activePreset = null">
+            {{ formattedDateFrom }} - {{ formattedDateTo }}
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+              <path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+          </span>
+          <span v-if="filters.showPast" class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded"
+            @click="filters.showPast = false">
+            {{ t('showPast') }}
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+              <path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+          </span>
+          <span v-for="tag in activeFilterTags" :key="tag.type + tag.value"
+            class="wcmc-filter-tag d-inline-flex align-items-center gap-2 px-3 py-1 rounded"
+            @click="tag.type === 'weekday' ? toggleWeekday(tag.value) : tag.type === 'zone' ? toggleZone(tag.value) : tag.type === 'frequency' ? toggleFrequency(tag.value) : tag.type === 'period' ? togglePeriod(tag.value) : toggleCategory(tag.value)">
             {{ tag.label }}
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5"/></svg>
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+              <path d="M6.5 1.5L1.5 6.5M1.5 1.5L6.5 6.5" stroke="currentColor" stroke-width="1.5" />
+            </svg>
           </span>
         </div>
-        <button
-          type="button"
-          class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2"
-          @click="clearAllFilters"
-        >
+        <button type="button" class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2"
+          @click="clearAllFilters">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            <path
+              d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
           </svg>
           <span class="small">{{ t('resetFilters') }}</span>
         </button>
@@ -274,7 +437,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
     <MarketsListSkeleton v-if="ds.loading && normalized.length === 0" :cards-per-column="8" />
 
-    <EmptyState v-else-if="!ds.loading && normalized.length > 0 && filtered.length === 0 && filters.weekday.length === 0" :lang="lang" />
+    <EmptyState
+      v-else-if="!ds.loading && normalized.length > 0 && filtered.length === 0 && filters.weekday.length === 0"
+      :lang="lang" />
 
     <!-- Mobile Filter Modal -->
     <div v-if="mobileFilterVisible" class="wcmc-mobile-filter-overlay" @click.self="mobileFilterVisible = false">
@@ -285,34 +450,39 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <h3 class="mb-0 fw-bold">{{ t('filters') }}</h3>
             <button type="button" class="btn btn-link p-0 text-decoration-none" @click="clearMenuFilters">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                <path
+                  d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
               </svg>
             </button>
           </div>
           <button type="button" class="btn btn-link p-0 text-decoration-none" @click="mobileFilterVisible = false">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              <path
+                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
             </svg>
           </button>
         </div>
-        
+
         <!-- Filter Content -->
         <div class="wcmc-mobile-filter-content p-3">
           <!-- Weekday Filter -->
           <div class="wcmc-mobile-filter-section mb-4">
             <h4 class="wcmc-mobile-filter-section-title text-uppercase mb-3">{{ t('weekday') }}</h4>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="weekdayFilter" id="weekdayAll" :checked="filters.weekday.length === 0" @change="filters.weekday = []">
+              <input class="form-check-input" type="radio" name="weekdayFilter" id="weekdayAll"
+                :checked="filters.weekday.length === 0" @change="filters.weekday = []">
               <label class="form-check-label" for="weekdayAll">{{ t('seeAll') }}</label>
             </div>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="weekdayFilter" id="weekdaySpecific" :checked="filters.weekday.length > 0">
+              <input class="form-check-input" type="radio" name="weekdayFilter" id="weekdaySpecific"
+                :checked="filters.weekday.length > 0">
               <label class="form-check-label" for="weekdaySpecific">{{ t('specificDay') }}</label>
             </div>
             <div v-if="filters.weekday.length > 0 || true" class="ms-4 mt-2">
               <div v-for="dayOption in filteredWeekdayOptions" :key="dayOption.idx" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'weekday-'+dayOption.idx" :checked="filters.weekday.includes(dayOption.idx)" @change="toggleWeekday(dayOption.idx)">
-                <label class="form-check-label" :for="'weekday-'+dayOption.idx">{{ dayOption.label }}</label>
+                <input class="form-check-input" type="checkbox" :id="'weekday-' + dayOption.idx"
+                  :checked="filters.weekday.includes(dayOption.idx)" @change="toggleWeekday(dayOption.idx)">
+                <label class="form-check-label" :for="'weekday-' + dayOption.idx">{{ dayOption.label }}</label>
               </div>
             </div>
           </div>
@@ -321,29 +491,28 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <div class="wcmc-mobile-filter-section mb-4">
             <h4 class="wcmc-mobile-filter-section-title text-uppercase mb-3">{{ t('zone') }}</h4>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="zoneFilter" id="zoneAll" :checked="filters.zone.length === 0" @change="filters.zone = []">
+              <input class="form-check-input" type="radio" name="zoneFilter" id="zoneAll"
+                :checked="filters.zone.length === 0" @change="filters.zone = []">
               <label class="form-check-label" for="zoneAll">{{ t('seeAll') }}</label>
             </div>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="zoneFilter" id="zoneSpecific" :checked="filters.zone.length > 0">
+              <input class="form-check-input" type="radio" name="zoneFilter" id="zoneSpecific"
+                :checked="filters.zone.length > 0">
               <label class="form-check-label" for="zoneSpecific">{{ t('specificLocations') }}</label>
             </div>
             <div v-if="filters.zone.length > 0 || true" class="ms-4 mt-2">
               <!-- Search input for zones -->
               <div class="mb-3">
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  :placeholder="t('search')"
-                  :value="zoneSearchQuery"
-                  @input="zoneSearchQuery = $event.target.value"
-                />
+                <input type="text" class="form-control form-control-sm" :placeholder="t('search')"
+                  :value="zoneSearchQuery" @input="zoneSearchQuery = $event.target.value" />
               </div>
               <div v-for="zone in filteredZonesForSearch" :key="zone" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'zone-'+zone" :checked="filters.zone.includes(zone)" @change="toggleZone(zone)">
-                <label class="form-check-label" :for="'zone-'+zone">{{ zone }}</label>
+                <input class="form-check-input" type="checkbox" :id="'zone-' + zone"
+                  :checked="filters.zone.includes(zone)" @change="toggleZone(zone)">
+                <label class="form-check-label" :for="'zone-' + zone">{{ zone }}</label>
               </div>
-              <div v-if="filteredZonesForSearch.length === 0 && zoneSearchQuery.trim()" class="text-muted text-center p-2 small">
+              <div v-if="filteredZonesForSearch.length === 0 && zoneSearchQuery.trim()"
+                class="text-muted text-center p-2 small">
                 {{ t('noResults') || 'No results found' }}
               </div>
             </div>
@@ -353,17 +522,20 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <div class="wcmc-mobile-filter-section mb-4">
             <h4 class="wcmc-mobile-filter-section-title text-uppercase mb-3">{{ t('frequency') }}</h4>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="frequencyFilter" id="frequencyAll" :checked="filters.frequency.length === 0" @change="filters.frequency = []">
+              <input class="form-check-input" type="radio" name="frequencyFilter" id="frequencyAll"
+                :checked="filters.frequency.length === 0" @change="filters.frequency = []">
               <label class="form-check-label" for="frequencyAll">{{ t('seeAll') }}</label>
             </div>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="frequencyFilter" id="frequencySpecific" :checked="filters.frequency.length > 0">
+              <input class="form-check-input" type="radio" name="frequencyFilter" id="frequencySpecific"
+                :checked="filters.frequency.length > 0">
               <label class="form-check-label" for="frequencySpecific">{{ t('specificFrequencies') }}</label>
             </div>
             <div v-if="filters.frequency.length > 0 || true" class="ms-4 mt-2">
               <div v-for="freq in availableFrequencies" :key="freq" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'freq-'+freq" :checked="filters.frequency.includes(freq)" @change="toggleFrequency(freq)">
-                <label class="form-check-label" :for="'freq-'+freq">{{ freq }}</label>
+                <input class="form-check-input" type="checkbox" :id="'freq-' + freq"
+                  :checked="filters.frequency.includes(freq)" @change="toggleFrequency(freq)">
+                <label class="form-check-label" :for="'freq-' + freq">{{ freq }}</label>
               </div>
             </div>
           </div>
@@ -372,17 +544,20 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <div class="wcmc-mobile-filter-section mb-4">
             <h4 class="wcmc-mobile-filter-section-title text-uppercase mb-3">{{ t('period') }}</h4>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="periodFilter" id="periodAll" :checked="filters.period.length === 0" @change="filters.period = []">
+              <input class="form-check-input" type="radio" name="periodFilter" id="periodAll"
+                :checked="filters.period.length === 0" @change="filters.period = []">
               <label class="form-check-label" for="periodAll">{{ t('seeAll') }}</label>
             </div>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="periodFilter" id="periodSpecific" :checked="filters.period.length > 0">
+              <input class="form-check-input" type="radio" name="periodFilter" id="periodSpecific"
+                :checked="filters.period.length > 0">
               <label class="form-check-label" for="periodSpecific">{{ t('specificPeriods') }}</label>
             </div>
             <div v-if="filters.period.length > 0 || true" class="ms-4 mt-2">
               <div v-for="monthOption in filteredMonthOptions" :key="monthOption.idx" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'period-'+monthOption.idx" :checked="filters.period.includes(monthOption.idx)" @change="togglePeriod(monthOption.idx)">
-                <label class="form-check-label" :for="'period-'+monthOption.idx">{{ monthOption.label }}</label>
+                <input class="form-check-input" type="checkbox" :id="'period-' + monthOption.idx"
+                  :checked="filters.period.includes(monthOption.idx)" @change="togglePeriod(monthOption.idx)">
+                <label class="form-check-label" :for="'period-' + monthOption.idx">{{ monthOption.label }}</label>
               </div>
             </div>
           </div>
@@ -391,29 +566,28 @@ SPDX-License-Identifier: AGPL-3.0-or-later
           <div class="wcmc-mobile-filter-section mb-4">
             <h4 class="wcmc-mobile-filter-section-title text-uppercase mb-3">{{ t('category') }}</h4>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="categoryFilter" id="categoryAll" :checked="filters.category.length === 0" @change="filters.category = []">
+              <input class="form-check-input" type="radio" name="categoryFilter" id="categoryAll"
+                :checked="filters.category.length === 0" @change="filters.category = []">
               <label class="form-check-label" for="categoryAll">{{ t('seeAll') }}</label>
             </div>
             <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="categoryFilter" id="categorySpecific" :checked="filters.category.length > 0">
+              <input class="form-check-input" type="radio" name="categoryFilter" id="categorySpecific"
+                :checked="filters.category.length > 0">
               <label class="form-check-label" for="categorySpecific">{{ t('specificCategories') }}</label>
             </div>
             <div v-if="filters.category.length > 0 || true" class="ms-4 mt-2">
               <!-- Search input for categories -->
               <div class="mb-3">
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  :placeholder="t('search')"
-                  :value="categorySearchQuery"
-                  @input="categorySearchQuery = $event.target.value"
-                />
+                <input type="text" class="form-control form-control-sm" :placeholder="t('search')"
+                  :value="categorySearchQuery" @input="categorySearchQuery = $event.target.value" />
               </div>
               <div v-for="cat in filteredCategoriesForSearch" :key="cat.Id" class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" :id="'cat-'+cat.Id" :checked="filters.category.includes(cat.Id)" @change="toggleCategory(cat.Id)">
-                <label class="form-check-label" :for="'cat-'+cat.Id">{{ cat.Name }}</label>
+                <input class="form-check-input" type="checkbox" :id="'cat-' + cat.Id"
+                  :checked="filters.category.includes(cat.Id)" @change="toggleCategory(cat.Id)">
+                <label class="form-check-label" :for="'cat-' + cat.Id">{{ cat.Name }}</label>
               </div>
-              <div v-if="filteredCategoriesForSearch.length === 0 && categorySearchQuery.trim()" class="text-muted text-center p-2 small">
+              <div v-if="filteredCategoriesForSearch.length === 0 && categorySearchQuery.trim()"
+                class="text-muted text-center p-2 small">
                 {{ t('noResults') || 'No results found' }}
               </div>
             </div>
@@ -427,75 +601,48 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       <div v-for="(dayIdx, dayName) in weekDays" :key="dayIdx" class="col-12 d-md-none d-flex px-1 flex-column">
         <!-- Mobile: Collapsible day section -->
         <div class="wcmc-market-day-column p-2 rounded">
-          <div 
-            class="wcmc-market-day-header d-flex align-items-center justify-content-between gap-2 mb-0" 
-            style="cursor: pointer;"
-            @click="toggleDayExpansion(dayIdx)"
-          >
+          <div class="wcmc-market-day-header d-flex align-items-center justify-content-between gap-2 mb-0"
+            style="cursor: pointer;" @click="toggleDayExpansion(dayIdx)">
             <span class="wcmc-market-day-header__name flex-fill fw-bold text-uppercase">{{ dayName }}</span>
             <div class="d-flex align-items-center gap-2">
-              <span v-if="marketsByDay[dayIdx] && marketsByDay[dayIdx].length > 0" class="wcmc-market-day-header__badge d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
+              <span v-if="marketsByDay[dayIdx] && marketsByDay[dayIdx].length > 0"
+                class="wcmc-market-day-header__badge d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
                 {{ marketsByDay[dayIdx].length }}
               </span>
-              <svg 
-                v-if="!isDayExpanded(dayIdx)"
-                width="16" 
-                height="16" 
-                viewBox="0 0 16 16" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2"
-                style="transition: transform 0.2s;"
-              >
-                <path d="M8 4V12M4 8H12" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg v-if="!isDayExpanded(dayIdx)" width="16" height="16" viewBox="0 0 16 16" fill="none"
+                stroke="currentColor" stroke-width="2" style="transition: transform 0.2s;">
+                <path d="M8 4V12M4 8H12" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
-              <svg 
-                v-else
-                width="16" 
-                height="16" 
-                viewBox="0 0 16 16" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2"
-                style="transition: transform 0.2s;"
-              >
-                <path d="M4 8H12" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
+                style="transition: transform 0.2s;">
+                <path d="M4 8H12" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
           </div>
           <div v-if="isDayExpanded(dayIdx)" class="wcmc-market-day-column__items d-flex flex-column gap-2 mt-3">
-            <MarketDayCard
-              v-for="item in marketsByDay[dayIdx]"
-              :key="item.id"
-              :item="item"
-              :lang="lang"
-              @details="openDetails"
-            />
+            <MarketDayCard v-for="item in marketsByDay[dayIdx]" :key="item.id" :item="item" :lang="lang"
+              @details="openDetails" />
           </div>
         </div>
       </div>
       <!-- Desktop: Grid layout - only show days with markets -->
-      <div v-for="(dayIdx, dayName) in weekDaysWithMarkets" :key="'desktop-'+dayIdx" class="d-none d-md-flex px-1 flex-column" style="flex: 1 1 0; max-width: 33%;">
+      <div v-for="(dayIdx, dayName) in weekDaysWithMarkets" :key="'desktop-' + dayIdx"
+        class="d-none d-md-flex px-1 flex-column" style="flex: 1 1 0; max-width: 33%;">
         <div class="wcmc-market-day-column p-2 rounded">
           <div class="wcmc-market-day-header d-flex align-items-center justify-content-between gap-2 mb-3">
             <span class="wcmc-market-day-header__name flex-fill fw-bold text-uppercase">{{ dayName }}</span>
-            <span v-if="marketsByDay[dayIdx] && marketsByDay[dayIdx].length > 0" class="wcmc-market-day-header__badge d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
+            <span v-if="marketsByDay[dayIdx] && marketsByDay[dayIdx].length > 0"
+              class="wcmc-market-day-header__badge d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
               {{ marketsByDay[dayIdx].length }}
             </span>
           </div>
           <div class="wcmc-market-day-column__items d-flex flex-column gap-2">
-            <MarketDayCard
-              v-for="item in marketsByDay[dayIdx]"
-              :key="item.id"
-              :item="item"
-              :lang="lang"
-              @details="openDetails"
-            />
+            <MarketDayCard v-for="item in marketsByDay[dayIdx]" :key="item.id" :item="item" :lang="lang"
+              @details="openDetails" />
           </div>
         </div>
       </div>
     </div>
-    <Pagination v-model="page" :has-prev="hasPrev" :has-next="hasNext" :next-page-number="page + 1" :total-pages="totalPages" :loading="ds.loading" :has-results="filtered.length > 0" />
   </div>
 </template>
 
@@ -507,6 +654,7 @@ import ErrorAlert from '../components/ErrorAlert.vue';
 import Pagination from '../components/Pagination.vue';
 
 import { normalizeOdhItem, getFrequency, getScheduleWeekdays, getScheduleMonths, isActiveInMonth } from '../../utils/normalize';
+import { buildActivityPoiRawfilter } from '../../api/odhClient';
 
 const TRANSLATIONS = {
   en: {
@@ -637,21 +785,28 @@ export default {
   },
   data() {
     // Initialize filters with default values from config
-    const zoneDefault = this.config.filterZoneDefaultValue ? 
-      (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue]) 
+    const zoneDefault = this.config.filterZoneDefaultValue ?
+      (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue])
       : [];
-    const categoryDefault = this.config.filterCategoryDefaultValue ? 
-      (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue]) 
+    const categoryDefault = this.config.filterCategoryDefaultValue ?
+      (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue])
       : [];
-    
+
     return {
-      query: '',
+      query: '', // Applied search query
+      searchBuffer: '', // Input buffer
+      dateRange: {
+        from: '',
+        to: '',
+      },
+      activePreset: null, // 'today', '7days', 'month', 'year', or null
       filters: {
         weekday: [],
         zone: zoneDefault,
         frequency: [],
         period: [],
         category: categoryDefault,
+        showPast: false, // Default OFF
       },
       dropdownOpen: {
         weekday: false,
@@ -682,6 +837,8 @@ export default {
     },
     activeFilterCount() {
       let count = 0;
+      if (this.dateRange.from || this.dateRange.to) count++;
+      if (this.filters.showPast) count++;
       count += this.filters.weekday.length;
       count += this.filters.zone.length;
       count += this.filters.frequency.length;
@@ -696,14 +853,17 @@ export default {
       return this.config.pageSize || 20;
     },
     dateRawfilter() {
-      // User requested to remove date filtering entirely
-      return null;
+      return buildActivityPoiRawfilter({
+        showPast: this.filters.showPast,
+        dateFrom: this.dateRange.from || undefined,
+        dateTo: this.dateRange.to || undefined,
+      });
     },
     locfilter() {
       if (!this.filters.zone || this.filters.zone.length === 0) return null;
       const ids = this.filters.zone.map(name => {
-         const m = this.filterMetadataMunicipalities.find(m => this.municipalityDisplayName(m) === name);
-         return m ? m.Id : null;
+        const m = this.filterMetadataMunicipalities.find(m => this.municipalityDisplayName(m) === name);
+        return m ? m.Id : null;
       }).filter(id => id);
       if (ids.length === 0) return null;
       return ids.map(id => `mun${id}`).join(',');
@@ -763,6 +923,24 @@ export default {
       const options = this.monthOptions;
       return options.map((label, idx) => ({ label, idx }));
     },
+    formattedDateFrom() {
+      if (!this.dateRange.from) return '';
+      // Format date as dd/mm/yyyy
+      const date = new Date(this.dateRange.from);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
+    formattedDateTo() {
+      if (!this.dateRange.to) return '';
+      // Format date as dd/mm/yyyy
+      const date = new Date(this.dateRange.to);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
     weekdayDisplayText() {
       if (this.filters.weekday.length === 0) return this.t('allDays');
       if (this.filters.weekday.length === 1) {
@@ -784,8 +962,8 @@ export default {
     periodDisplayText() {
       if (this.filters.period.length === 0) return this.t('allPeriods');
       if (this.filters.period.length === 1) {
-         const m = this.monthOptions[this.filters.period[0]];
-         return m ? m : this.filters.period[0];
+        const m = this.monthOptions[this.filters.period[0]];
+        return m ? m : this.filters.period[0];
       }
       return `${this.filters.period.length} ${this.t('selected')}`;
     },
@@ -837,7 +1015,7 @@ export default {
         return this.availableZones;
       }
       const query = this.zoneSearchQuery.trim().toLowerCase();
-      return this.availableZones.filter(zone => 
+      return this.availableZones.filter(zone =>
         zone.toLowerCase().includes(query)
       );
     },
@@ -859,7 +1037,7 @@ export default {
       // Get items that match current filters (excluding weekday filter)
       const baseItems = this.applyFilters(this.normalized, { ignoreWeekday: true });
       const validDays = new Set();
-      
+
       baseItems.forEach((item) => {
         const scheduleWeekdays = getScheduleWeekdays(item.raw);
         if (scheduleWeekdays.length > 0) {
@@ -873,7 +1051,7 @@ export default {
           }
         }
       });
-      
+
       return validDays;
     },
     validZones() {
@@ -883,24 +1061,24 @@ export default {
       // Get items that match current filters (excluding frequency filter)
       const baseItems = this.applyFilters(this.normalized, { ignoreFrequency: true });
       const validFreqs = new Set();
-      
+
       baseItems.forEach((item) => {
         const freq = getFrequency(item.raw, this.lang);
         if (freq) validFreqs.add(freq);
       });
-      
+
       return validFreqs;
     },
     validPeriods() {
       // Get items that match current filters (excluding period filter)
       const baseItems = this.applyFilters(this.normalized, { ignorePeriod: true });
       const validPeriods = new Set();
-      
+
       baseItems.forEach((item) => {
         const months = getScheduleMonths(item.raw);
         months.forEach(month => validPeriods.add(month));
       });
-      
+
       return validPeriods;
     },
     validCategories() {
@@ -924,7 +1102,7 @@ export default {
       this.filtered.forEach((item) => {
         // First, try to get weekdays from schedule (most accurate)
         const scheduleWeekdays = getScheduleWeekdays(item.raw);
-        
+
         if (scheduleWeekdays.length > 0) {
           // Use schedule weekdays - add item to all relevant days
           scheduleWeekdays.forEach((day) => {
@@ -950,7 +1128,7 @@ export default {
     },
     weekDaysWithMarkets() {
       const days = WEEKDAYS[this.lang] || WEEKDAYS.it;
-      
+
       // Order: Monday to Sunday
       const orderedDays = [
         { name: days[1], idx: 1 }, // Monday
@@ -961,19 +1139,19 @@ export default {
         { name: days[6], idx: 6 }, // Saturday
         { name: days[0], idx: 0 }, // Sunday
       ];
-      
+
       // Check if any filters are active (excluding weekday filter for this check)
       const hasActiveFilters = this.query.trim() !== '' ||
         this.filters.zone.length > 0 ||
         this.filters.frequency.length > 0 ||
         this.filters.period.length > 0 ||
         this.filters.category.length > 0;
-      
+
       // Get selected weekday indices
       const selectedWeekdays = this.filters.weekday.map(d => Number(d));
-      
+
       const result = {};
-      
+
       orderedDays.forEach(({ name, idx }) => {
         // Show day if:
         // 1. No filters active (show all days)
@@ -981,19 +1159,21 @@ export default {
         // 3. Day is explicitly selected in weekday filter
         const hasMarkets = this.marketsByDay[idx] && this.marketsByDay[idx].length > 0;
         const isSelectedWeekday = selectedWeekdays.includes(idx);
-        
+
         if (!hasActiveFilters || hasMarkets || isSelectedWeekday) {
           result[name] = idx;
         }
       });
-      
+
       return result;
     },
   },
   async mounted() {
     await this.store.ensureFilterMetadataLoaded();
+    this.store.resetList('market');
     await this.store.ensureLoaded('market', 999999, {
       rawfilter: this.dateRawfilter,
+      pageSize: 0,
       search: this.query?.trim() || undefined,
       locfilter: this.locfilter || undefined,
       odhtagfilter: this.odhtagfilter || undefined,
@@ -1015,6 +1195,7 @@ export default {
       this.store.resetList('market');
       this.store.ensureLoaded('market', 999999, {
         rawfilter: this.dateRawfilter,
+        pageSize: 0,
         search: this.query?.trim() || undefined,
         locfilter: this.locfilter || undefined,
         odhtagfilter: this.odhtagfilter || undefined,
@@ -1025,6 +1206,7 @@ export default {
       this.store.resetList('market');
       this.store.ensureLoaded('market', 999999, {
         rawfilter: this.dateRawfilter,
+        pageSize: 0,
         search: this.query?.trim() || undefined,
         locfilter: this.locfilter || undefined,
         odhtagfilter: this.odhtagfilter || undefined,
@@ -1035,6 +1217,7 @@ export default {
       this.store.resetList('market');
       this.store.ensureLoaded('market', 999999, {
         rawfilter: this.dateRawfilter,
+        pageSize: 0,
         search: this.query?.trim() || undefined,
         locfilter: this.locfilter || undefined,
         odhtagfilter: this.odhtagfilter || undefined,
@@ -1046,6 +1229,7 @@ export default {
       this.store.resetList('market');
       this.store.ensureLoaded('market', 999999, {
         rawfilter: this.dateRawfilter,
+        pageSize: 0,
         search: this.query?.trim() || undefined,
         locfilter: this.locfilter || undefined,
         odhtagfilter: this.odhtagfilter || undefined,
@@ -1186,7 +1370,7 @@ export default {
       // OR keep it as a safety check. 
       // But user said "make sure thy are filtering thru the api".
       // Removing local filter ensures we trust the API result.
-      
+
       // if (this.filters.zone.length > 0) {
       //   result = result.filter((item) => this.filters.zone.includes(item.municipality));
       // }
@@ -1300,11 +1484,11 @@ export default {
     handleClickOutside(event) {
       // Check if click is inside any filter ref
       const isInside = this.$refs.weekdayFilter?.contains(event.target) ||
-                       this.$refs.zoneFilter?.contains(event.target) ||
-                       this.$refs.frequencyFilter?.contains(event.target) ||
-                       this.$refs.periodFilter?.contains(event.target) ||
-                       this.$refs.categoryFilter?.contains(event.target);
-      
+        this.$refs.zoneFilter?.contains(event.target) ||
+        this.$refs.frequencyFilter?.contains(event.target) ||
+        this.$refs.periodFilter?.contains(event.target) ||
+        this.$refs.categoryFilter?.contains(event.target);
+
       if (!isInside) {
         this.dropdownOpen.weekday = false;
         this.dropdownOpen.zone = false;
@@ -1332,13 +1516,13 @@ export default {
     clearMenuFilters() {
       // Reset only filters inside the menu (weekday, zone, frequency, period, category)
       // Reset to default values from config
-      const zoneDefault = this.config.filterZoneDefaultValue ? 
-        (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue]) 
+      const zoneDefault = this.config.filterZoneDefaultValue ?
+        (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue])
         : [];
-      const categoryDefault = this.config.filterCategoryDefaultValue ? 
-        (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue]) 
+      const categoryDefault = this.config.filterCategoryDefaultValue ?
+        (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue])
         : [];
-      
+
       this.filters.weekday = [];
       this.filters.zone = zoneDefault;
       this.filters.frequency = [];
@@ -1348,20 +1532,125 @@ export default {
     clearAllFilters() {
       // Reset all filters including query
       // Reset to default values from config
-      const zoneDefault = this.config.filterZoneDefaultValue ? 
-        (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue]) 
+      const zoneDefault = this.config.filterZoneDefaultValue ?
+        (Array.isArray(this.config.filterZoneDefaultValue) ? this.config.filterZoneDefaultValue : [this.config.filterZoneDefaultValue])
         : [];
-      const categoryDefault = this.config.filterCategoryDefaultValue ? 
-        (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue]) 
+      const categoryDefault = this.config.filterCategoryDefaultValue ?
+        (Array.isArray(this.config.filterCategoryDefaultValue) ? this.config.filterCategoryDefaultValue : [this.config.filterCategoryDefaultValue])
         : [];
-      
+
+      this.searchBuffer = '';
       this.query = '';
+      this.dateRange.from = '';
+      this.dateRange.to = '';
+      this.activePreset = null;
       this.filters.weekday = [];
       this.filters.zone = zoneDefault;
       this.filters.frequency = [];
       this.filters.period = [];
       this.filters.category = categoryDefault;
+      this.filters.showPast = false;
+      this.applySearch();
+    },
+    applySearch() {
+      if (this.query !== this.searchBuffer) {
+        this.query = this.searchBuffer;
+      }
+    },
+    formatDateForInput(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+    setPresetToday() {
+      const today = new Date();
+      const dateStr = this.formatDateForInput(today);
+      this.dateRange.from = dateStr;
+      this.dateRange.to = dateStr;
+      this.activePreset = 'today';
+    },
+    setPreset7Days() {
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 7);
+      this.dateRange.from = this.formatDateForInput(today);
+      this.dateRange.to = this.formatDateForInput(endDate);
+      this.activePreset = '7days';
+    },
+    setPresetMonth() {
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setMonth(endDate.getMonth() + 1);
+      this.dateRange.from = this.formatDateForInput(today);
+      this.dateRange.to = this.formatDateForInput(endDate);
+      this.activePreset = 'month';
+    },
+    setPresetYear() {
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setFullYear(endDate.getFullYear() + 1);
+      this.dateRange.from = this.formatDateForInput(today);
+      this.dateRange.to = this.formatDateForInput(endDate);
+      this.activePreset = 'year';
+    },
+    onDateFromChange(event) {
+      this.dateRange.from = event.target.value;
+      this.activePreset = null; // Clear preset when manually changed
+    },
+    onDateToChange(event) {
+      this.dateRange.to = event.target.value;
+      this.activePreset = null; // Clear preset when manually changed
+    },
+    openDatePickerFrom() {
+      if (this.$refs.dateInputFrom) {
+        this.$refs.dateInputFrom.showPicker?.();
+        if (!this.$refs.dateInputFrom.showPicker) {
+          this.$refs.dateInputFrom.focus();
+          this.$refs.dateInputFrom.click();
+        }
+      }
+    },
+    openDatePickerTo() {
+      if (this.$refs.dateInputTo) {
+        this.$refs.dateInputTo.showPicker?.();
+        if (!this.$refs.dateInputTo.showPicker) {
+          this.$refs.dateInputTo.focus();
+          this.$refs.dateInputTo.click();
+        }
+      }
+    },
+    handleDateTouchMobileFrom() {
+      const dateInput = this.$refs.dateInputMobileFrom;
+      if (dateInput) {
+        dateInput.focus();
+        if (dateInput.showPicker) {
+          try {
+            dateInput.showPicker();
+          } catch (e) {
+            dateInput.click();
+          }
+        } else {
+          dateInput.click();
+        }
+      }
+    },
+    handleDateTouchMobileTo() {
+      const dateInput = this.$refs.dateInputMobileTo;
+      if (dateInput) {
+        dateInput.focus();
+        if (dateInput.showPicker) {
+          try {
+            dateInput.showPicker();
+          } catch (e) {
+            dateInput.click();
+          }
+        } else {
+          dateInput.click();
+        }
+      }
     },
   },
 };
+
 </script>

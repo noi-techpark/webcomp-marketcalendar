@@ -20,7 +20,7 @@ const PRESET_MAP = {
 };
 
 /** Resolve logo path from preset (e.g. "src/app/logo/OpenDataHub_Logo_dark.svg") to require context key and return URL. */
-const logoContext = require.context('./app/logo', false, /\.svg$/);
+const logoContext = require.context('./app/logo', false, /\.(png|jpe?g|gif|svg|webp)$/);
 function resolveLogoUrl(presetPath) {
   if (!presetPath || typeof presetPath !== 'string') return null;
   const trimmed = presetPath.trim();
@@ -139,17 +139,18 @@ class WebcompMarketCalendar extends HTMLElement {
 
       const cssVarName = '--' + lineKey.toLowerCase().replace(/_/g, '-');
       this._mountPoint.style.setProperty(cssVarName, value);
+
+      // Keep backward compatibility for specific keys if needed, 
+      // though the generic rule above covers them if they follow the naming convention.
       if (lineKey === 'PRIMARY_COLOR') {
         this._mountPoint.style.setProperty('--primary-color', value);
       }
       if (lineKey === 'PRIMARY_COLOR_DARK') {
-        this._mountPoint.style.setProperty('--primary-color-dark', value);
         if (this._config.theme === 'dark') {
           this._mountPoint.style.setProperty('--primary-color', value);
         }
       }
       if (lineKey === 'PRIMARY_COLOR_LIGHT') {
-        this._mountPoint.style.setProperty('--primary-color-light', value);
         if (this._config.theme === 'light') {
           this._mountPoint.style.setProperty('--primary-color', value);
         }

@@ -6,6 +6,7 @@
     "start": "webpack serve --config webpack.dev.js"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
     "leaflet": "^1.9.4",
     "vue": "^3.5.13"

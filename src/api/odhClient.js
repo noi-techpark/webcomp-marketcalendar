@@ -31,16 +31,54 @@ function isAbsoluteUrl(u) {
   }
 }
 
+
+let requestCount = 0;
+let lastReset = Date.now();
+
 async function fetchJson(url, { signal, debug, origin } = {}) {
+  // Rate Limiting: max 10 calls, then wait 3s
+  const now = Date.now();
+  if (now - lastReset > 1000) {
+    // Reset count if window passed? No, the user said "10 times in a row back to back".
+    // This implies a sliding window or just a counter.
+    // "if we make any api call more than 10 times in a row back to back make sure to add a wait of 3 second"
+    // Interpretation: After 10 calls, pause 3s, then reset count.
+  }
+
+  // Simple implementation:
+  if (requestCount >= 10) {
+    if (debug) console.log('[odhClient] Rate limit reached (10 calls), waiting 3s...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    requestCount = 0;
+  }
+  requestCount++;
+
   // console.log('[odhClient] Fetching URL:', url);
   const headers = {
     'Accept': 'application/json',
   };
-  if (origin) {
-    headers['X-Origin'] = origin;
+
+  // Always ensure origin is set, prefer passed origin, fallback to default
+  const effectiveOrigin = origin || 'webcomp-market-calender';
+
+  let fetchUrl = url;
+  if (effectiveOrigin) {
+    // Check if origin param already exists
+    const hasOrigin = fetchUrl.includes('origin=') || (fetchUrl.includes('?') && new URLSearchParams(fetchUrl.split('?')[1]).has('origin'));
+
+    if (!hasOrigin) {
+      const separator = fetchUrl.includes('?') ? '&' : '?';
+      fetchUrl += `${separator}origin=${encodeURIComponent(effectiveOrigin)}`;
+    }
   }
+
+  // We also keep the header for compatibility
+  if (effectiveOrigin) {
+    headers['X-Origin'] = effectiveOrigin;
+  }
+
   try {
-    const res = await fetch(url, {
+    const res = await fetch(fetchUrl, {
       method: 'GET',
       signal,
       headers,
@@ -78,27 +116,6 @@ const START_FIELD = 'OperationSchedule.0.Start';
 const STOP_FIELD = 'OperationSchedule.0.Stop';
 
 /**
- * --- How ODH rawfilter works (for debugging) ---
- *
- * The API accepts a `rawfilter` query param with OData-like expressions:
- *
- *   ge(field, 'value')   → field >= value
- *   le(field, 'value')   → field <= value
- *   and(a, b, c)        → (a) AND (b) AND (c)
- *
- * For dates we use YYYYMMDD strings (e.g. '20260205').
- *
- * Event has OperationSchedule[0].Start and .Stop (ISO dates). We filter so:
- *   - "Event overlaps [from, to]" = (Start <= to) AND (Stop >= from)
- *     → le(OperationSchedule.0.Start, to) and ge(OperationSchedule.0.Stop, from)
- *   - "Event starts on or after from" → ge(OperationSchedule.0.Start, from)
- *   - "Event ends on or before to"    → le(OperationSchedule.0.Stop, to)
- *
- * To debug: log the return value of buildActivityPoiDateRawfilter(...) or inspect
- * the request URL in DevTools (Network tab) and decode the rawfilter param.
- */
-
-/**
  * Format date for rawfilter (YYYYMMDD). Accepts YYYY-MM-DD or Date.
  * @param {string|Date} dateInput
  * @returns {string} YYYYMMDD
@@ -115,19 +132,6 @@ function toYyyyMmDd(dateInput) {
 
 /**
  * Build rawfilter for ODHActivityPoi date filtering.
- *
- * Rawfilter semantics (ODH API):
- * - ge(field, 'YYYYMMDD') = field >= date (event start/end on or after date)
- * - le(field, 'YYYYMMDD') = field <= date (event start/end on or before date)
- * - and(a, b, ...) = all conditions must be true
- *
- * Range [dateFrom, dateTo]: we use OVERLAP logic so events that occur in the range are included:
- * - Event overlaps [dateFrom, dateTo] when: Start <= dateTo AND Stop >= dateFrom
- * - So we add: le(OperationSchedule.0.Start, dateTo) and ge(OperationSchedule.0.Stop, dateFrom)
- * - That includes events that start before the range but end inside it, or span the whole range.
- *
- * @param {{ showPast: boolean, dateFrom?: string, dateTo?: string }} options
- * @returns {string|null} rawfilter string or null if no date filter
  */
 export function buildActivityPoiDateRawfilter({ showPast, dateFrom, dateTo } = {}) {
   // When "show past" is on, do not send any date filter so the API returns all records including past
@@ -163,9 +167,6 @@ export function buildActivityPoiDateRawfilter({ showPast, dateFrom, dateTo } = {
 
 /**
  * Build combined rawfilter for ODHActivityPoi: date + optional category (tag).
- * Zone / municipality is NOT handled here – use dedicated API filters instead of rawfilter on Name.
- * @param {{ showPast?: boolean, dateFrom?: string, dateTo?: string, categoryTagIds?: string[] }} options
- * @returns {string|null} rawfilter string or null
  */
 export function buildActivityPoiRawfilter({ showPast, dateFrom, dateTo, categoryTagIds, weekdays } = {}) {
   const datePart = buildActivityPoiDateRawfilter({ showPast, dateFrom, dateTo });
@@ -191,6 +192,13 @@ export function buildActivityPoiRawfilter({ showPast, dateFrom, dateTo, category
     }
   }
 
+  // Category filtering (ODH Tags)
+  // If we have category IDs, we need to filter by them.
+  // The API supports 'odhtagfilter' param, but we can also use 'rawfilter'.
+  // However, `odhtagfilter` is usually preferred for bitmask tags, but specific tags might need `eq(SmgTags, 'id')` or similar.
+  // Looking at existing code, `odhtagfilter` was passed as a separate param in buildFirstPageUrl.
+  // Here we only handle `rawfilter` parts. `odhtagfilter` is handled in `buildFirstPageUrl`.
+
   if (parts.length === 0) return null;
   if (parts.length === 1) return parts[0];
   return `and(${parts.join(',')})`;
@@ -212,29 +220,37 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
   }
 
   function buildFirstPageUrl({ type, pageSize, rawfilter, pagenumber, search, locfilter, odhtagfilter } = {}) {
-    const resolvedType =
-      type != null && VALID_TYPES.includes(type) ? type : 'yearmarket';
-    if (resolvedType !== type && debug) {
+    const resolvedType = type != null && VALID_TYPES.includes(type) ? type : null;
+    if (type != null && !resolvedType && debug) {
       console.warn(
-        '[webcomp-market-calendar] buildFirstPageUrl: invalid type "%s", using "yearmarket". Use one of: %s.',
+        '[webcomp-market-calendar] buildFirstPageUrl: invalid type "%s". Use one of: %s.',
         type,
         VALID_TYPES.join(', ')
       );
     }
-    const tagfilter = TYPE_TO_TAGFILTER[resolvedType];
+    const tagfilter = resolvedType ? TYPE_TO_TAGFILTER[resolvedType] : null;
 
     const params = new URLSearchParams();
     params.append('source', source);
-    params.append('tagfilter', tagfilter);
+    if (tagfilter) {
+      params.append('tagfilter', tagfilter);
+    }
 
     const effectivePageSize = getPageSize(pageSize);
-    params.append('pagesize', String(effectivePageSize));
+
+    // Search Refactor: if search filter is active, force page size to 0 (all results)
+    if (search && String(search).trim()) {
+      params.append('pagesize', '0');
+      // Use 'searchfilter' instead of 'search'
+      params.append('searchfilter', String(search).trim());
+    } else {
+      params.append('pagesize', String(effectivePageSize));
+    }
+
     if (rawfilter && String(rawfilter).trim()) {
       params.append('rawfilter', String(rawfilter).trim());
     }
-    if (search && String(search).trim()) {
-      params.append('search', String(search).trim());
-    }
+
     if (locfilter && String(locfilter).trim()) {
       params.append('locfilter', String(locfilter).trim());
     }
@@ -242,7 +258,9 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
       params.append('odhtagfilter', String(odhtagfilter).trim());
     }
 
-    if (resolvedType === 'yearmarket') {
+    // Markets Data Fetching Fix: Add rawsort to markets as well
+    // Both types should be sorted by start date to ensure consistent ordering
+    if (resolvedType === 'yearmarket' || resolvedType === 'market') {
       params.append('rawsort', 'OperationSchedule.0.Start');
     }
 
@@ -314,39 +332,33 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
   }
 
   /**
-   * Fetch unique tag/category IDs (and names) from ODHActivityPoi for use as category filter options.
-   * Fetches pages of POIs and collects ODHTags (or Tags). Pass type 'market' or 'yearmarket' to limit to one, or omit to fetch both and merge.
+   * Fetch unique tag/category IDs (and names).
+   * NEW: uses https://tourism.api.opendatahub.testingmachine.eu/v1/Tag/poi
+   * instead of iterating over ODHActivityPoi pages.
    */
   async function fetchActivityPoiTagList({ type, signal, maxPages = 5, pageSize = 100 } = {}) {
-    const seen = new Map();
-    const types = type ? [type] : ['market', 'yearmarket'];
-    for (const t of types) {
-      let pageNum = 1;
-      let hasMore = true;
-      while (hasMore && pageNum <= maxPages) {
-        const url = buildFirstPageUrl({
-          type: t,
-          pageSize,
-          pagenumber: pageNum,
-        });
-        const { items } = await fetchPageByUrl(url, { signal });
-        for (const item of items) {
-          const tags = item?.ODHTags || item?.Tags || [];
-          if (!Array.isArray(tags)) continue;
-          for (const tag of tags) {
-            const id = tag?.Id ?? tag?.Name ?? tag;
-            if (id == null || String(id).trim() === '') continue;
-            const key = String(id);
-            if (seen.has(key)) continue;
-            const name = typeof tag?.Name === 'string' ? tag.Name : (tag?.Detail?.en?.Title ?? tag?.Detail?.de?.Title ?? key);
-            seen.set(key, { Id: key, Name: name });
-          }
-        }
-        hasMore = items.length >= pageSize;
-        pageNum += 1;
+    const params = new URLSearchParams();
+    const url = joinUrl(base, `v1/Tag/poi?${params.toString()}`);
+
+    try {
+      const response = await fetchJson(url, { signal, debug, origin: requestOrigin });
+
+      const items = Array.isArray(response) ? response : (Array.isArray(response?.Items) ? response.Items : []);
+
+      const seen = new Map();
+      for (const item of items) {
+        const id = item?.Id;
+        if (!id) continue;
+
+        seen.set(id, { Id: id, Name: item.Name ? item.Name : id, _raw: item });
       }
+
+      return Array.from(seen.values());
+
+    } catch (e) {
+      if (debug) console.warn('fetchActivityPoiTagList failed', e);
+      return [];
     }
-    return Array.from(seen.values()).sort((a, b) => String(a.Name).localeCompare(String(b.Name)));
   }
 
   async function fetchAllOrUntil({ type, minItems = 0, signal } = {}) {
@@ -381,14 +393,16 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     return items.filter((it) => String(it?.LocationInfo?.MunicipalityInfo?.Id || '') === wanted);
   }
 
-  async function fetchSimilarFairs({ odhtagfilter, locfilter, excludeId, signal, maxResults = 50, type = 'yearmarket' } = {}) {
+  async function fetchSimilarFairs({ odhtagfilter, locfilter, excludeId, signal, maxResults = 50, type = 'yearmarket', rawfilter } = {}) {
     const params = new URLSearchParams();
     params.append('source', source);
-    params.append('tagfilter', TYPE_TO_TAGFILTER[type] || TYPE_TO_TAGFILTER.yearmarket);
+    const tagfilter = TYPE_TO_TAGFILTER[type] || (type === undefined ? null : TYPE_TO_TAGFILTER.yearmarket);
+    if (tagfilter) params.append('tagfilter', tagfilter);
     params.append('pagesize', '25'); // Fetch 25 items per page
 
     if (odhtagfilter) params.append('odhtagfilter', odhtagfilter);
     if (locfilter) params.append('locfilter', locfilter);
+    if (rawfilter) params.append('rawfilter', rawfilter);
 
     const results = [];
     let currentUrl = joinUrl(base, `v1/ODHActivityPoi?${params.toString()}`);
@@ -417,7 +431,8 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
   async function countItemsByLocfilter({ locfilter, type, signal } = {}) {
     const params = new URLSearchParams();
     params.append('source', source);
-    params.append('tagfilter', TYPE_TO_TAGFILTER[type] || TYPE_TO_TAGFILTER.market);
+    const tagfilter = TYPE_TO_TAGFILTER[type] || (type === undefined ? null : TYPE_TO_TAGFILTER.market);
+    if (tagfilter) params.append('tagfilter', tagfilter);
     params.append('pagesize', '100'); // Use larger page size for efficiency
 
     if (locfilter) params.append('locfilter', locfilter);
@@ -439,10 +454,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     return count;
   }
 
-  /**
-   * Fetch all municipalities from the API for use as zone filter options.
-   * Returns array of { Id, Name } (Name may be object with language keys; we normalize to string).
-   */
   async function fetchMunicipalityList({ signal, language, pageSize = 500 } = {}) {
     const params = new URLSearchParams();
     params.append('pagesize', String(pageSize));
@@ -553,10 +564,8 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     let next = null;
 
     if (Array.isArray(response)) {
-      // Direct array response
       items = response;
     } else if (Array.isArray(response?.Items)) {
-      // Paginated response with Items property
       items = response.Items;
       next = response?.NextPage || null;
     }
@@ -568,15 +577,12 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     const fullUrl = isAbsoluteUrl(url) ? url : joinUrl(base, url);
     const response = await fetchJson(fullUrl, { signal, debug, origin: requestOrigin });
 
-    // Handle both direct array response and paginated response
     let items = [];
     let next = null;
 
     if (Array.isArray(response)) {
-      // Direct array response
       items = response;
     } else if (Array.isArray(response?.Items)) {
-      // Paginated response with Items property
       items = response.Items;
       next = response?.NextPage || null;
     }
@@ -588,7 +594,7 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     const out = [];
     const params = new URLSearchParams();
     if (language) params.append('language', language);
-    params.append('pagesize', '100'); // Use a reasonable page size
+    params.append('pagesize', '100');
     let nextUrl = joinUrl(base, `v1/TourismAssociation?${params.toString()}`);
 
     while (nextUrl) {
@@ -609,7 +615,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
       throw new Error('Name is required');
     }
 
-    // Helper function to escape single quotes for rawfilter
     const escapeName = (name) => String(name).replace(/'/g, "''");
 
     const baseParams = new URLSearchParams();
@@ -619,8 +624,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     baseParams.append('type', type);
     baseParams.append('removenullvalues', String(removenullvalues));
 
-    // Try multiple approaches to find the entity (municipality or region)
-    // 1. Try exact match with original casing
     const originalName = escapeName(name);
     let params = new URLSearchParams(baseParams);
     params.append('rawfilter', `eq(Name, '${originalName}')`);
@@ -632,7 +635,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
       return response.Items[0];
     }
 
-    // 2. Try exact match with uppercase (in case API stores names in uppercase)
     const upperName = escapeName(name.toUpperCase());
     params = new URLSearchParams(baseParams);
     params.append('rawfilter', `eq(Name, '${upperName}')`);
@@ -644,7 +646,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
       return response.Items[0];
     }
 
-    // 3. Try like() with original casing (partial match, case-sensitive)
     params = new URLSearchParams(baseParams);
     params.append('rawfilter', `like(Name, '${originalName}')`);
     url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
@@ -652,7 +653,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     response = await fetchJson(url, { signal, debug, origin: requestOrigin });
 
     if (Array.isArray(response?.Items) && response.Items.length > 0) {
-      // Find the best match (exact case-insensitive match)
       const exactMatch = response.Items.find(item =>
         item?.Name?.toLowerCase() === name.toLowerCase()
       );
@@ -660,7 +660,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
       return response.Items[0];
     }
 
-    // 4. Try like() with uppercase
     params = new URLSearchParams(baseParams);
     params.append('rawfilter', `like(Name, '${upperName}')`);
     url = joinUrl(base, `v1/GeoShape?${params.toString()}`);
@@ -668,7 +667,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     response = await fetchJson(url, { signal, debug, origin: requestOrigin });
 
     if (Array.isArray(response?.Items) && response.Items.length > 0) {
-      // Find the best match (exact case-insensitive match)
       const exactMatch = response.Items.find(item =>
         item?.Name?.toLowerCase() === name.toLowerCase()
       );
@@ -679,7 +677,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     return null;
   }
 
-  // Keep the old function name for backward compatibility
   async function fetchGeoShapeByMunicipalityName(municipalityName, options = {}) {
     return await fetchGeoShapeByName(municipalityName, { ...options, type: 'municipality' });
   }
@@ -706,7 +703,6 @@ export function createOdhClient({ apiBase, debug = false, config = null, origin 
     fetchTourismAssociationPageByUrl,
     fetchGeoShapeByMunicipalityName,
     fetchGeoShapeByName,
+    fetchJson,
   };
 }
-
-

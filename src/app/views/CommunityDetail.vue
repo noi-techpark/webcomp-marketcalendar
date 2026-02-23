@@ -12,9 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     <ErrorAlert v-if="communityError || fairsError || marketsError"
       :message="communityError || fairsError || marketsError" />
 
-    <CommunityDetailSkeleton
-      v-if="(loadingCommunity || loadingFairs || loadingMarkets) && communityData === null"
-    />
+    <CommunityDetailSkeleton v-if="(loadingCommunity || loadingFairs || loadingMarkets) && communityData === null" />
 
     <div v-else-if="communityData" class="wcmc-community-detail__content">
       <!-- Colonna principale -->
@@ -29,7 +27,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <div class="wcmc-community-detail__header d-flex align-items-start">
                   <img v-if="communityData.logoUrl" :src="communityData.logoUrl" :alt="communityData.name"
                     class="flex-shrink-0 wcmc-community-logo-img" />
-                  <div v-else class="d-flex align-items-center justify-content-center flex-shrink-0 wcmc-community-logo-placeholder">
+                  <div v-else
+                    class="d-flex align-items-center justify-content-center flex-shrink-0 wcmc-community-logo-placeholder">
                     <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                       class="wcmc-d-block">
                       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D"
@@ -44,7 +43,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <div class="wcmc-community-detail__header d-flex align-items-start">
                   <img v-if="communityData.logoUrl" :src="communityData.logoUrl" :alt="communityData.name"
                     class="flex-shrink-0 wcmc-community-logo-img" />
-                  <div v-else class="d-flex align-items-center justify-content-center flex-shrink-0 wcmc-community-logo-placeholder">
+                  <div v-else
+                    class="d-flex align-items-center justify-content-center flex-shrink-0 wcmc-community-logo-placeholder">
                     <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                       class="wcmc-d-block">
                       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2D2D2D"
@@ -68,8 +68,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                   <div class="col-12 mt-3">
                     <div class="row g-3 g-md-2">
                       <!-- Address Column -->
-                      <div
-                        v-if="communityData.municipalityName || communityData.address"
+                      <div v-if="communityData.municipalityName || communityData.address"
                         class="col-6 col-md-6 col-lg-3">
                         <div
                           class="wcmc-community-detail__info-item wcmc-community-detail__info-item--address d-flex align-items-start gap-2">
@@ -81,7 +80,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                           <div class="wcmc-community-detail__address-lines d-flex flex-column gap-1">
                             <!-- Mobile: Municipality name on top, address below -->
                             <div class="d-md-none d-flex flex-column gap-1">
-                              <div v-if="communityData.municipalityName" class="fw-bold">{{ communityData.municipalityName }}</div>
+                              <div v-if="communityData.municipalityName" class="fw-bold">{{
+                                communityData.municipalityName }}</div>
                               <a v-if="communityData.googleMapsSearchLink && communityData.address"
                                 :href="communityData.googleMapsSearchLink" target="_blank"
                                 class="wcmc-community-detail__info-link">
@@ -90,13 +90,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                               <div v-else-if="communityData.address">{{ communityData.address }}</div>
                             </div>
                             <!-- Desktop: Combined with comma -->
-                            <a v-if="communityData.googleMapsSearchLink"
-                              :href="communityData.googleMapsSearchLink" target="_blank"
-                              class="wcmc-community-detail__info-link d-none d-md-block">
-                              <span v-if="communityData.municipalityName">{{ communityData.municipalityName }}</span><span v-if="communityData.municipalityName && communityData.address">, </span><span v-if="communityData.address">{{ communityData.address }}</span>
+                            <a v-if="communityData.googleMapsSearchLink" :href="communityData.googleMapsSearchLink"
+                              target="_blank" class="wcmc-community-detail__info-link d-none d-md-block">
+                              <span v-if="communityData.municipalityName">{{ communityData.municipalityName
+                                }}</span><span v-if="communityData.municipalityName && communityData.address">,
+                              </span><span v-if="communityData.address">{{ communityData.address }}</span>
                             </a>
                             <div v-else class="d-none d-md-block">
-                              <span v-if="communityData.municipalityName">{{ communityData.municipalityName }}</span><span v-if="communityData.municipalityName && communityData.address">, </span><span v-if="communityData.address">{{ communityData.address }}</span>
+                              <span v-if="communityData.municipalityName">{{ communityData.municipalityName
+                                }}</span><span v-if="communityData.municipalityName && communityData.address">,
+                              </span><span v-if="communityData.address">{{ communityData.address }}</span>
                             </div>
                           </div>
                         </div>
@@ -131,7 +134,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                           <div class="wcmc-community-detail__info-content d-flex flex-column gap-1">
                             <span class="wcmc-community-detail__info-label fw-semibold text-uppercase">{{
                               t('website').toUpperCase() }}</span>
-                            <a :href="communityData.website" target="_blank" class="wcmc-community-detail__info-link text-break">
+                            <a :href="communityData.website" target="_blank"
+                              class="wcmc-community-detail__info-link text-break">
                               {{ communityData.website }}
                             </a>
                           </div>
@@ -262,7 +266,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <h2 class="wcmc-community-detail__related-title mb-0">
                       {{ t('relatedFairs') }}
-                      <span class="badge wcmc-badge-circle ms-2" :style="fairsBadgeStyle">{{ relatedFairs.length }}</span>
+                      <span class="badge wcmc-badge-circle ms-2" :style="fairsBadgeStyle">{{ relatedFairs.length
+                        }}</span>
                     </h2>
                     <div v-if="relatedFairs.length > 0" class="d-flex gap-2">
                       <button class="btn btn-outline-light btn-sm wcmc-slider-btn" :disabled="!canScrollFairsLeft"
@@ -287,7 +292,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     <div v-for="fair in relatedFairs" :key="fair.id"
                       class="wcmc-community-detail__related-card flex-shrink-0 d-flex flex-column"
                       @click="openDetails(fair)">
-                      <ItemCard :item="fair" badge="Fair" variant="communityFair" :large-padding="false" :lang="config.language" @details="openDetails" />
+                      <ItemCard :item="fair" badge="Fair" variant="communityFair" :large-padding="false"
+                        :lang="config.language" @details="openDetails" />
                     </div>
                   </div>
                 </div>
@@ -299,7 +305,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <h2 class="wcmc-community-detail__related-title mb-0">
                       {{ t('relatedMarkets') }}
-                      <span class="badge wcmc-badge-circle ms-2" :style="marketsBadgeStyle">{{ relatedMarkets.length }}</span>
+                      <span class="badge wcmc-badge-circle ms-2" :style="marketsBadgeStyle">{{ relatedMarkets.length
+                        }}</span>
                     </h2>
                     <div v-if="relatedMarkets.length > 0" class="d-flex gap-2">
                       <button class="btn btn-outline-light btn-sm wcmc-slider-btn" :disabled="!canScrollMarketsLeft"
@@ -347,6 +354,7 @@ import Breadcrumb from '../components/Breadcrumb.vue';
 
 import { normalizeOdhItem, getMunicipalityName, getMunicipalityId, getDistrictId, getRegionId, getContactInfo } from '../../utils/normalize';
 import { fetchMunicipalityName, fetchDistrictName, fetchRegionName } from '../../utils/locationCache';
+import { buildActivityPoiRawfilter } from '../../api/odhClient';
 
 
 function pickLang(arr, lang) {
@@ -487,7 +495,7 @@ export default {
         const id = String(r?.Id || '');
         return id.includes(':market:') && !id.includes(':yearmarket:');
       });
-      
+
       return filtered.map((r) =>
         normalizeOdhItem(r, { lang: this.config.language, type: 'market' })
       );
@@ -498,7 +506,7 @@ export default {
         const id = String(r?.Id || '');
         return id.includes(':yearmarket:');
       });
-      
+
       const normalized = filtered.map((r) =>
         normalizeOdhItem(r, { lang: this.config.language, type: 'yearmarket' })
       );
@@ -631,7 +639,7 @@ export default {
     async loadCommunityData() {
       this.loadingCommunity = true;
       this.communityError = null;
-          // Reset GeoShape data when loading a new community
+      // Reset GeoShape data when loading a new community
       this.geoShapeData = [];
       this.geoShapeError = null;
       try {
@@ -692,9 +700,11 @@ export default {
         }
 
         if (locfilter) {
+          const rawfilter = buildActivityPoiRawfilter({ showPast: false });
           const items = await this.store.fetchSimilarItems({
             type: 'yearmarket',
             locfilter,
+            rawfilter,
             maxResults: 100,
           });
 
@@ -783,9 +793,11 @@ export default {
         }
 
         if (locfilter) {
+          const rawfilter = buildActivityPoiRawfilter({ showPast: false });
           const items = await this.store.fetchSimilarItems({
             type: 'market',
             locfilter,
+            rawfilter,
             maxResults: 100,
           });
 
@@ -842,7 +854,7 @@ export default {
       try {
         // Collect all unique municipalities from both fairs and markets
         const municipalitiesSet = new Set();
-        
+
         // Get municipalities from normalized relatedFairs
         if (this.relatedFairs && this.relatedFairs.length > 0) {
           this.relatedFairs.forEach(fair => {
@@ -851,7 +863,7 @@ export default {
             }
           });
         }
-        
+
         // Get municipalities from normalized relatedMarkets
         if (this.relatedMarkets && this.relatedMarkets.length > 0) {
           this.relatedMarkets.forEach(market => {
@@ -860,7 +872,7 @@ export default {
             }
           });
         }
-        
+
         // If not found in normalized data, try from raw data
         if (municipalitiesSet.size === 0) {
           // Try from raw fairs data
@@ -872,7 +884,7 @@ export default {
               }
             });
           }
-          
+
           // Try from raw markets data
           if (this.relatedMarketsData && this.relatedMarketsData.length > 0) {
             this.relatedMarketsData.forEach(market => {
@@ -883,12 +895,12 @@ export default {
             });
           }
         }
-        
+
         if (municipalitiesSet.size === 0) {
           this.loadingGeoShape = false;
           return;
         }
-        
+
         // Fetch geoshapes for all unique municipalities
         const municipalitiesArray = Array.from(municipalitiesSet);
         const geoShapePromises = municipalitiesArray.map(municipalityName =>
@@ -903,9 +915,9 @@ export default {
             return null;
           })
         );
-        
+
         const geoShapes = await Promise.all(geoShapePromises);
-        
+
         // Filter out null values (failed fetches)
         this.geoShapeData = geoShapes.filter(shape => shape !== null);
       } catch (e) {

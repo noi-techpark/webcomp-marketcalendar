@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { reactive, watch } from 'vue';
-import { createOdhClient } from '../api/odhClient';
+import { createOdhClient, buildActivityPoiRawfilter } from '../api/odhClient';
 
 function emptyDataset() {
   return {
@@ -43,13 +43,19 @@ export function createStore(config) {
     },
     markets: emptyDataset(),
     fairs: emptyDataset(),
-    communities: emptyDataset(),
+    communities: { ...emptyDataset(), searchQuery: '' },
     filterMetadata: {
       municipalities: [],
       tags: [],
       loading: false,
       error: null,
       loadedLanguage: null,
+    },
+    globalCounts: {
+      markets: {}, // communityId -> count
+      fairs: {},   // communityId -> count
+      loaded: false,
+      loading: false,
     },
   });
 
@@ -92,6 +98,18 @@ export function createStore(config) {
     if (tab === 'fairs') state.route = { name: 'fairsList', params: {} };
     if (tab === 'map') state.route = { name: 'map', params: {} };
     if (tab === 'community') state.route = { name: 'communityList', params: {} };
+
+    // Reset community search if leaving community tab (or even if entering, to start fresh)
+    if (tab !== 'community' && state.communities.searchQuery) {
+      state.communities.searchQuery = '';
+      state.communities.itemsRaw = [];
+      state.communities.nextPageUrl = null;
+      state.communities.done = false;
+      state.communities.loading = false;
+      state.communities.error = null;
+      state.communities.paginationMeta = null;
+      state.ui.community.page = 1;
+    }
   }
 
   function go(name, params = {}) {
@@ -107,7 +125,12 @@ export function createStore(config) {
   }
 
   function resetList(type) {
-    if (type !== 'market' && type !== 'yearmarket') return;
+    if (type !== 'market' && type !== 'yearmarket' && type !== 'all') return;
+    if (type === 'all') {
+      Object.assign(state.markets, emptyDataset());
+      Object.assign(state.fairs, emptyDataset());
+      return;
+    }
     const ds = datasetFor(type);
     if (!ds) return;
     Object.assign(ds, emptyDataset());
@@ -118,11 +141,13 @@ export function createStore(config) {
   }
 
   async function ensureLoaded(type, minItems, { signal, rawfilter, pageSize, search, locfilter, odhtagfilter } = {}) {
-    if (type !== 'market' && type !== 'yearmarket') {
+    if (type !== 'market' && type !== 'yearmarket' && type !== 'all') {
       log('ensureLoaded skipped: invalid type', type);
       return;
     }
-    const ds = datasetFor(type);
+    // For 'all' we use a temporary virtual dataset or just pick one to manage pagination if needed,
+    // but in MapView it's used with minItems=999999 and reset before call.
+    const ds = type === 'all' ? state.fairs : datasetFor(type);
     if (ds.loading) return;
     const effectivePageSize = pageSize != null && Number.isFinite(pageSize) && pageSize > 0
       ? pageSize
@@ -134,11 +159,13 @@ export function createStore(config) {
     if (ds.done && ds.itemsRaw.length >= minItems) return;
 
     ds.loading = true;
+    if (type === 'all') state.markets.loading = true;
     ds.error = null;
+    if (type === 'all') state.markets.error = null;
     try {
       if (!ds.nextPageUrl && !ds.done) {
         ds.nextPageUrl = client.buildFirstPageUrl({
-          type,
+          type: type === 'all' ? undefined : type,
           pageSize: effectivePageSize,
           rawfilter: rawfilter || undefined,
           search: search || undefined,
@@ -149,7 +176,23 @@ export function createStore(config) {
 
       while (ds.nextPageUrl && ds.itemsRaw.length < minItems) {
         const { items, nextPage, page } = await client.fetchPageByUrl(ds.nextPageUrl, { signal });
-        ds.itemsRaw.push(...items);
+
+        if (type === 'all') {
+          // Distribute items based on tags
+          items.forEach(item => {
+            const tagIds = item.TagIds || [];
+            if (tagIds.includes('hds:market')) state.markets.itemsRaw.push(item);
+            if (tagIds.includes('hds:yearmarket')) state.fairs.itemsRaw.push(item);
+          });
+          // Also push to the 'ds' we are trackig for the loop if it's not one of them
+          // but here ds is state.fairs, so it's already being pushed if tag matches.
+          // To be safe and ensure the loop continues until minItems:
+          if (ds.itemsRaw.length < minItems) {
+            // We use fairs as the master dataset for 'all' pagination tracking
+          }
+        } else {
+          ds.itemsRaw.push(...items);
+        }
         if (page && !ds.paginationMeta && (page.TotalPages !== undefined || page.TotalResults !== undefined)) {
           ds.paginationMeta = {
             TotalPages: page.TotalPages || null,
@@ -167,6 +210,7 @@ export function createStore(config) {
       log('load error', type, ds.error);
     } finally {
       ds.loading = false;
+      if (type === 'all') state.markets.loading = false;
     }
   }
 
@@ -313,7 +357,9 @@ export function createStore(config) {
         const pageSize = config.pageSize || 20;
         const params = new URLSearchParams();
         params.append('pagesize', String(pageSize));
+        params.append('pagenumber', '1');
         if (config.language) params.append('language', config.language);
+        if (state.communities.searchQuery) params.append('searchfilter', state.communities.searchQuery);
         ds.nextPageUrl = `${config.apiBase || 'https://tourism.api.opendatahub.testingmachine.eu'}/v1/TourismAssociation?${params.toString()}`;
       }
 
@@ -377,7 +423,7 @@ export function createStore(config) {
   function getStaticCategoryOptions() {
     return Array.isArray(config.filterCategoryOptions) && config.filterCategoryOptions.length > 0
       ? config.filterCategoryOptions.map((c) => ({ Id: c.Id ?? c.id ?? c, Name: c.Name ?? c.name ?? String(c) }))
-      : DEFAULT_CATEGORY_OPTIONS;
+      : []; // Default to empty if not configured, we will fetch from API
   }
 
   async function ensureFilterMetadataLoaded({ signal } = {}) {
@@ -395,6 +441,21 @@ export function createStore(config) {
     }
     try {
       const language = lang();
+
+      // Fetch Tags from API if no static options provided or to supplement
+      // User requested: make a api call to .../v1/Tag/poi
+      const tagsUrl = `${config.apiBase || 'https://tourism.api.opendatahub.testingmachine.eu'}/v1/Tag/poi?validforentity=active&origin=webcomp-market-calender`;
+      const tagsRes = await client.fetchJson(tagsUrl);
+      if (tagsRes && tagsRes.Id) {
+        const effectiveId = tagsRes.Id;
+        let name = tagsRes.TagName[language];
+
+        const existingIds = new Set(meta.tags.map(t => t.Id));
+        if (!existingIds.has(effectiveId)) {
+          meta.tags.push({ Id: effectiveId, Name: name });
+        }
+      }
+
       // Only pass language if it's not 'en' or if API requires it for localized names
       const muniList = await client.fetchMunicipalityList({ signal, language });
 
@@ -420,6 +481,109 @@ export function createStore(config) {
 
   async function fetchGeoShapeByName(name, options = {}) {
     return await client.fetchGeoShapeByName(name, options);
+  }
+
+  async function fetchCommunityActivities(communityId) {
+    if (!communityId) return;
+
+    // Check if we already have data for this community
+    if (state.globalCounts.markets[communityId] !== undefined && state.globalCounts.fairs[communityId] !== undefined) return;
+
+    try {
+      const locfilter = communityId;
+      const rawfilter = buildActivityPoiRawfilter({ showPast: false });
+
+      const url = `${config.apiBase || 'https://tourism.api.opendatahub.testingmachine.eu'}/v1/ODHActivityPoi`;
+      const params = new URLSearchParams();
+      params.append('pagenumber', '1');
+      params.append('pagesize', '0'); // User insisted on pagesize=0 to get all related values
+      params.append('type', '255');
+      params.append('locfilter', `tvs${locfilter}`);
+      params.append('source', 'hds');
+      // params.append('odhtagfilter', 'market,yearmarket'); // User requested client-side filtering
+      if (rawfilter) params.append('rawfilter', rawfilter);
+
+      const res = await client.fetchJson(`${url}?${params.toString()}`);
+      // Assuming res.Items/res.items contains the list. If pagesize=0 returns Items, good.
+      const items = res.Items || res.items || [];
+
+      let marketCount = 0;
+      let fairCount = 0;
+
+      items.forEach(item => {
+        // Client-side classification
+        const tagIds = item.TagIds || [];
+
+        // Identify if market or fair
+        // Market logic: 'hds:market' tag
+        // Fair logic: 'hds:yearmarket' tag
+        if (tagIds.includes('hds:market')) {
+          marketCount++;
+        }
+        if (tagIds.includes('hds:yearmarket')) {
+          fairCount++;
+        }
+      });
+
+      state.globalCounts.markets[communityId] = marketCount;
+      state.globalCounts.fairs[communityId] = fairCount;
+
+    } catch (e) {
+      console.error('fetchCommunityActivities failed for', communityId, e);
+      // Set to 0 on error to avoid infinite retries or loading state
+      state.globalCounts.markets[communityId] = 0;
+      state.globalCounts.fairs[communityId] = 0;
+    }
+  }
+
+  async function fetchCommunitiesActivities(ids) {
+    if (!ids || ids.length === 0) return;
+
+    // Only set loading if we actually need to fetch something
+    const needsFetch = ids.some(id => state.globalCounts.markets[id] === undefined || state.globalCounts.fairs[id] === undefined);
+
+    if (needsFetch) {
+      state.globalCounts.loading = true;
+      try {
+        await Promise.all(ids.map(id => fetchCommunityActivities(id)));
+      } finally {
+        state.globalCounts.loading = false;
+      }
+    }
+  }
+
+  async function fetchCommunitiesActivities(ids) {
+    if (!ids || ids.length === 0) return;
+
+    // Only set loading if we actually need to fetch something
+    const needsFetch = ids.some(id => state.globalCounts.markets[id] === undefined || state.globalCounts.fairs[id] === undefined);
+    if (!needsFetch) return;
+
+    state.globalCounts.loading = true;
+    try {
+      await Promise.all(ids.map(id => fetchCommunityActivities(id)));
+    } finally {
+      state.globalCounts.loading = false;
+    }
+  }
+
+  function setCommunitySearch(query) {
+    const q = String(query || '').trim();
+    if (state.communities.searchQuery === q) return;
+
+    state.communities.searchQuery = q;
+    // Reset community data
+    state.communities.itemsRaw = [];
+    state.communities.nextPageUrl = null;
+    state.communities.done = false;
+    state.communities.loading = false;
+    state.communities.error = null;
+    state.communities.paginationMeta = null;
+
+    // Reset page index
+    state.ui.community.page = 1;
+
+    // The view watcher on page or explicit call will trigger reload
   }
 
   watch(
@@ -464,6 +628,9 @@ export function createStore(config) {
     fetchGeoShapeByMunicipalityName,
     fetchGeoShapeByName,
     ensureFilterMetadataLoaded,
+    fetchCommunityActivities,
+    fetchCommunitiesActivities,
+    setCommunitySearch,
   };
 }
 

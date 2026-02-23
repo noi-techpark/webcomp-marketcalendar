@@ -13,7 +13,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center justify-content-between mb-3">
       <h2 class="wcmc-page-title d-none d-lg-block">{{ t('community') }}</h2>
       <div class="w-100 w-lg-auto" style="max-width: 520px;">
-        <SearchBar v-model="query" :placeholder="t('searchPlaceholder')" />
+        <div class="wcmc-search-wrapper w-100">
+          <div class="wcmc-search-box position-relative d-flex align-items-center">
+            <input id="wcmc-community-search" type="search" class="wcmc-search-input wcmc-input-base form-control w-100"
+              :placeholder="t('searchPlaceholder')" :value="searchBuffer" @input="searchBuffer = $event.target.value"
+              @keydown.enter="applySearch" />
+            <svg class="wcmc-search-icon position-absolute wcmc-icon-right" width="18" height="18" viewBox="0 0 24 24"
+              fill="currentColor" style="cursor: pointer;" @click="applySearch">
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -28,15 +39,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
       <div>Visible: {{ visibleGroups.length }}</div>
     </div>
 
-    <CommunityListSkeleton v-if="(communities.loading && communities.itemsRaw.length === 0) || areCountsLoading"
-      :count="8" />
+    <CommunityListSkeleton v-if="communities.loading && communities.itemsRaw.length === 0" :count="8" />
+
 
     <EmptyState v-else-if="!communities.loading && filteredGroups.length === 0" />
 
     <div v-else class="d-flex flex-column gap-3" style="cursor: pointer;">
       <div v-for="group in visibleGroups" :key="group.id || group.key"
-        class="row g-0 align-items-center py-2 py-lg-2 rounded wcmc-community-list-row"
-        @click="openGroup(group)">
+        class="row g-0 align-items-center py-2 py-lg-2 rounded wcmc-community-list-row" @click="openGroup(group)">
         <!-- Mobile/Tablet Layout: Icon, Name/CAP/Badges, Arrow -->
         <div class="col-12 d-lg-none d-flex align-items-center gap-3 px-3">
           <!-- Logo/Icon -->
@@ -67,14 +77,26 @@ SPDX-License-Identifier: AGPL-3.0-or-later
               <!-- Counts Column -->
               <div class="d-flex align-items-center gap-3">
                 <div class="d-flex align-items-center gap-2">
-                  <span class="wcmc-badge-circle flex-shrink-0" :style="fairsBadgeStyle">
-                    {{ group.fairCount }}
+                  <span class="wcmc-badge-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+                    :style="fairsBadgeStyle">
+                    <svg v-if="globalCounts.loading" class="wcmc-spinner" xmlns="http://www.w3.org/2000/svg" width="14"
+                      height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                    </svg>
+                    <span v-else>{{ group.fairCount }}</span>
                   </span>
                   <span style="font-size: 14px;">FIERE</span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <span class="wcmc-badge-circle flex-shrink-0" :style="marketsBadgeStyle">
-                    {{ group.marketCount }}
+                  <span class="wcmc-badge-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+                    :style="marketsBadgeStyle">
+                    <svg v-if="globalCounts.loading" class="wcmc-spinner" xmlns="http://www.w3.org/2000/svg" width="14"
+                      height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                    </svg>
+                    <span v-else>{{ group.marketCount }}</span>
                   </span>
                   <span style="font-size: 14px;">MERCATI</span>
                 </div>
@@ -145,25 +167,33 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </div>
 
         <!-- FIERE Badge Column -->
-        <div
-          class="d-none d-lg-block col-lg-1 col-xl-1 px-2"
-          style="min-width: 0;">
+        <div class="d-none d-lg-block col-lg-1 col-xl-1 px-2" style="min-width: 0;">
           <div class="d-flex flex-row align-items-center gap-1 flex-nowrap" style="white-space: nowrap;">
             <span class="flex-shrink-0" style="font-size: 12px;">FIERE</span>
-            <span class="wcmc-badge-circle flex-shrink-0" :style="fairsBadgeStyle">
-              {{ group.fairCount }}
+            <span class="wcmc-badge-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+              :style="fairsBadgeStyle">
+              <svg v-if="globalCounts.loading" class="wcmc-spinner" xmlns="http://www.w3.org/2000/svg" width="14"
+                height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              </svg>
+              <span v-else>{{ group.fairCount }}</span>
             </span>
           </div>
         </div>
 
         <!-- MERCATI Badge Column -->
-        <div
-          class="d-none d-lg-block col-lg-1 col-xl-1 px-2"
-          style="min-width: 0;">
+        <div class="d-none d-lg-block col-lg-1 col-xl-1 px-2" style="min-width: 0;">
           <div class="d-flex flex-row align-items-center gap-1 flex-nowrap" style="white-space: nowrap;">
             <span class="flex-shrink-0" style="font-size: 12px;">MERCATI</span>
-            <span class="wcmc-badge-circle flex-shrink-0" :style="marketsBadgeStyle">
-              {{ group.marketCount }}
+            <span class="wcmc-badge-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+              :style="marketsBadgeStyle">
+              <svg v-if="globalCounts.loading" class="wcmc-spinner" xmlns="http://www.w3.org/2000/svg" width="14"
+                height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              </svg>
+              <span v-else>{{ group.marketCount }}</span>
             </span>
           </div>
         </div>
@@ -180,13 +210,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     </div>
 
     <div class="d-flex justify-content-center justify-content-lg-end pt-4">
-      <Pagination v-model="page" :has-prev="hasPrev" :has-next="hasNext" :next-page-number="page + 1" :total-pages="totalPages" :loading="communities.loading" :has-results="filteredGroups.length > 0" />
+      <Pagination v-model="page" :has-prev="hasPrev" :has-next="hasNext" :next-page-number="page + 1"
+        :total-pages="totalPages" :loading="communities.loading" :has-results="filteredGroups.length > 0" />
     </div>
   </div>
 </template>
 
 <script>
-import SearchBar from '../components/SearchBar.vue';
 import CommunityListSkeleton from '../components/CommunityListSkeleton.vue';
 import EmptyState from '../components/EmptyState.vue';
 import ErrorAlert from '../components/ErrorAlert.vue';
@@ -242,7 +272,7 @@ function getName(raw, lang) {
 
 export default {
   name: 'CommunityList',
-  components: { SearchBar, CommunityListSkeleton, EmptyState, ErrorAlert, Pagination, Breadcrumb },
+  components: { CommunityListSkeleton, EmptyState, ErrorAlert, Pagination, Breadcrumb },
   props: {
     config: { type: Object, required: true },
     store: { type: Object, required: true },
@@ -250,20 +280,17 @@ export default {
   data() {
     return {
       query: '',
-      counts: {}, // Current counts: { communityId: { fairCount: 0, marketCount: 0 } }
-      loadingCounts: new Set(), // Track which communities are currently loading counts
-      isMounted: false,
-      _countsVersion: 0, // Version counter to force reactivity updates
+      searchBuffer: '',
     };
   },
   beforeUnmount() {
-    // Clean up any pending operations
-    this.isMounted = false;
-    this.loadingCounts.clear();
   },
   computed: {
     communities() {
       return this.store.state.communities;
+    },
+    globalCounts() {
+      return this.store.state.globalCounts;
     },
     pageSize() {
       return this.config.pageSize || 8;
@@ -298,10 +325,9 @@ export default {
             const regionId = raw?.RegionId || raw?.Region?.Id;
             const customId = raw?.CustomId; // Might be TourismVerein ID (e.g., "TV1081")
 
-            // Get counts from reactive data (will be loaded via API)
-            const counts = this.counts[id] || { fairCount: 0, marketCount: 0 };
-            const fairCount = counts.fairCount;
-            const marketCount = counts.marketCount;
+            // Get counts from global state
+            const fairCount = this.globalCounts.fairs[id] || 0;
+            const marketCount = this.globalCounts.markets[id] || 0;
 
             const result = {
               id,
@@ -327,18 +353,36 @@ export default {
         .sort((a, b) => a.name.localeCompare(b.name));
     },
     filteredGroups() {
-      const q = String(this.query || '').trim().toLowerCase();
-      if (!q) return this.groups;
-      return this.groups.filter((g) => String(g.name || '').toLowerCase().includes(q));
+      // Client-side filtering removed in favor of server-side search
+      return this.groups;
     },
     startIdx() {
+      // Logic for client-side pagination is no longer needed if we rely on API pagination?
+      // Wait, if API returns page 1 of results, we show them all?
+      // The current implementation seems to load ALL communities then paginate locally?
+      // Re-reading ensureCommunitiesLoaded: it keeps fetching until minItems or done.
+      // If we use server search, we might get paginated results.
+      // But the current UI expects a large list and does local slicing.
+      // If we change ensureCommunitiesLoaded to use API search, it resets itemsRaw.
+      // So filteredGroups will be the search results.
+      // We still need pagination if results > pageSize.
       return (this.page - 1) * this.pageSize;
     },
     endIdx() {
       return this.page * this.pageSize;
     },
     visibleGroups() {
+      // If we have API search, itemsRaw contains the *fetched* items. 
+      // If we use pageSize in store.js, we might only have one page.
+      // But the View does local slicing: `filteredGroups.slice(startIdx, endIdx)`.
+      // If store fetches distinct pages, we need to be careful.
+      // `ensureCommunitiesLoaded` fetches *up to* minItems. 
+      // `minItems` is `n * this.pageSize` (via page watcher).
+      // So logic holds: we ensure we have enough items for the current page, then slice locally.
       return this.filteredGroups.slice(this.startIdx, this.endIdx);
+    },
+    visibleGroupIds() {
+      return this.visibleGroups.map(g => g.id).join(',');
     },
     hasPrev() {
       return this.page > 1;
@@ -348,25 +392,12 @@ export default {
       return !this.communities.done;
     },
     totalPages() {
-      // If filters are active (query search), always use filtered results count
-      const hasActiveFilters = this.query && this.query.trim().length > 0;
-      
-      if (hasActiveFilters) {
-        // Calculate based on filtered results
-        if (this.filteredGroups.length === 0) return 1;
-        return Math.ceil(this.filteredGroups.length / this.pageSize);
-      }
-      
-      // No filters active - use TotalPages from API response if available
       if (this.communities.paginationMeta && this.communities.paginationMeta.TotalPages !== null && this.communities.paginationMeta.TotalPages > 0) {
         return this.communities.paginationMeta.TotalPages;
       }
-      
-      // Fallback to computed value based on filtered groups
-      if (this.filteredGroups.length === 0) return 1;
-      // Estimate based on current filtered groups, but if not done loading, add some buffer
+      if (this.filteredGroups.length === 0) return 0; // Fixed: 0 if empty
+
       const basePages = Math.ceil(this.filteredGroups.length / this.pageSize);
-      // If still loading, we don't know the exact total, so return null to let Pagination estimate
       return this.communities.done ? basePages : null;
     },
     breadcrumbItems() {
@@ -390,123 +421,38 @@ export default {
         color: '#ffffff',
       };
     },
-    areCountsLoading() {
-      // Reference version counter to ensure reactivity
-      this._countsVersion;
-      // Check if any visible group is still loading counts
-      if (this.visibleGroups.length === 0) return false;
-      return this.visibleGroups.some((g) => {
-        if (!g || !g.id) return false;
-        // Check if it's currently loading
-        if (this.loadingCounts.has(g.id)) return true;
-        // Check if counts haven't been loaded yet (not in counts object)
-        if (!this.counts[g.id]) return true;
-        return false;
-      });
-    },
   },
   async mounted() {
-    this.isMounted = true;
-    // Load all communities - use a very high number to ensure all pages are loaded
-    await this.store.ensureCommunitiesLoaded(999999);
-    // Load counts for visible communities
-    if (this.isMounted) {
-      await this.loadCountsForVisible();
-    }
+    // Initialize by fetching first page of communities
+    this.store.setListPage('community', 1);
+    await this.store.ensureCommunitiesLoaded(this.pageSize);
   },
   watch: {
+    visibleGroupIds: {
+      immediate: true,
+      handler(newIds) {
+        if (!newIds) return;
+        const ids = newIds.split(',').filter(Boolean);
+        if (ids.length === 0) return;
+
+        // Fetch counts for each visible community
+        this.store.fetchCommunitiesActivities(ids);
+      }
+    },
     query() {
-      this.page = 1;
+      // Do nothing on verify input; applySearch triggers it
     },
     async page(next, prev) {
       const n = Number(next);
-      const p = Number(prev);
       if (!Number.isFinite(n) || n <= 0) return;
-      if (Number.isFinite(p) && n <= p) return;
+
+      // Ensure we have enough items for the requested page
       const needed = n * this.pageSize;
       await this.store.ensureCommunitiesLoaded(needed);
-      // Load counts for newly visible communities
-      await this.loadCountsForVisible();
-    },
-    'communities.itemsRaw': {
-      handler(newVal, oldVal) {
-        // When communities are loaded, load counts for visible ones
-        if (newVal && newVal.length > 0) {
-          this.$nextTick(() => {
-            this.loadCountsForVisible();
-          });
-        }
-      },
-      deep: true,
     },
   },
   methods: {
-    async loadCountsForVisible() {
-      // Load counts for all visible communities in parallel
-      const promises = this.visibleGroups
-        .filter((g) => g && g.id) // Filter out null/undefined items
-        .map((g) => this.loadCountsForCommunity(g));
-      await Promise.all(promises);
-    },
-    async loadCountsForCommunity(g) {
-      // Safety check
-      if (!g || !g.id) return;
 
-      // Skip if already loading
-      if (this.loadingCounts.has(g.id)) return;
-
-      this.loadingCounts.add(g.id);
-      this._countsVersion++; // Force reactivity update
-
-      try {
-        // Determine locfilter - TourismAssociation ID itself is the TourismVerein ID
-        // Priority: TourismAssociation ID (tvs) > RegionId (reg) > MunicipalityId (mun)
-        let locfilter = null;
-
-        // The TourismAssociation ID is the TourismVerein ID
-        if (g.id) {
-          locfilter = `tvs${g.id}`;
-        } else if (g.regionId) {
-          locfilter = `reg${g.regionId}`;
-        }
-
-        if (!locfilter) {
-          if (this.isMounted) {
-            this.counts[g.id] = { fairCount: 0, marketCount: 0 };
-          }
-          return;
-        }
-
-        // Fetch counts directly from API for both fairs and markets in parallel
-        const [fairCount, marketCount] = await Promise.all([
-          this.store.countItemsByLocfilter({
-            locfilter,
-            type: 'yearmarket',
-          }).catch(() => 0),
-          this.store.countItemsByLocfilter({
-            locfilter,
-            type: 'market',
-          }).catch(() => 0),
-        ]);
-
-        // Update counts only if component is still mounted
-        if (this.isMounted) {
-          this.counts[g.id] = {
-            fairCount,
-            marketCount,
-          };
-        }
-      } catch (e) {
-        if (this.isMounted) {
-          this.counts[g.id] = { fairCount: 0, marketCount: 0 };
-        }
-      } finally {
-        if (this.isMounted) {
-          this.loadingCounts.delete(g.id);
-          this._countsVersion++; // Force reactivity update
-        }
-      }
-    },
     openGroup(g) {
       if (!g || !g.id) return;
       this.store.go('communityDetail', { id: g.id, name: g.name || 'Community' });
@@ -552,6 +498,14 @@ export default {
       const lang = this.config.language || 'it';
       const dict = TRANSLATIONS[lang] || TRANSLATIONS.it;
       return dict[key] || TRANSLATIONS.en[key] || key;
+    },
+    applySearch() {
+      if (this.query !== this.searchBuffer) {
+        this.query = this.searchBuffer;
+        this.store.setCommunitySearch(this.query);
+        // Ensure new results are loaded
+        this.store.ensureCommunitiesLoaded(this.pageSize);
+      }
     },
   },
 };
